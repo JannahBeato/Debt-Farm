@@ -1,16 +1,30 @@
+using TMPro;
+using System;
+using System.Collections;
 using UnityEngine;
 
-public class WorldTimeDisplay : MonoBehaviour
+namespace WorldTime
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [RequireComponent(typeof(TMP_Text))]
+    public class WorldTimeDisplay : MonoBehaviour
     {
-        
-    }
+        [SerializeField] private WorldTime _worldTime;
+        private TMP_Text _text;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        private void Awake()
+        {
+            _text = GetComponent<TMP_Text>();
+            _worldTime.WorldTimeChanged += OnWorldTimeChanged;
+        }
+
+        private void OnDestroy()
+        {
+            _worldTime.WorldTimeChanged -= OnWorldTimeChanged;
+        }
+
+        private void OnWorldTimeChanged(object sender, TimeSpan newTime)
+        {
+            _text.text = newTime.ToString(@"hh\:mm");
+        }
     }
 }
