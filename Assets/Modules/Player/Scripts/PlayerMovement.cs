@@ -1,7 +1,8 @@
-using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(BoxCollider2D))]
+[RequireComponent(typeof(Animator))]
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float _moveSpeed = 5f;
@@ -13,12 +14,10 @@ public class PlayerMovement : MonoBehaviour
     private Animator _animator;
     private BoxCollider2D _collider;
 
-
     private const string _horizontal = "Horizontal";
     private const string _vertical = "Vertical";
     private const string _lastHorizontal = "LastHorizontal";
     private const string _lastVertical = "LastVertical";
-
 
     private void Awake()
     {
@@ -27,17 +26,15 @@ public class PlayerMovement : MonoBehaviour
         _animator = GetComponent<Animator>();
     }
 
-
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        EnableMovement();
+        ReadMovementInput();
 
-        //Animation
+        // Animation
         _animator.SetFloat(_horizontal, _movement.x);
         _animator.SetFloat(_vertical, _movement.y);
 
-        //Last Direction
+        // Last Direction
         if (_movement != Vector2.zero)
         {
             _animator.SetFloat(_lastHorizontal, _movement.x);
@@ -50,21 +47,21 @@ public class PlayerMovement : MonoBehaviour
         TryMove(_movement);
     }
 
-    public void EnableMovement()
+    private void ReadMovementInput()
     {
         if (!_canMove)
         {
             _movement = Vector2.zero;
+            return;
         }
-        else
-        {
-            _movement = InputManager.Movement;
-        }
+
+        // Make sure diagonals aren't faster and casts are consistent
+        _movement = InputManager.Movement.normalized;
     }
 
     private void TryMove(Vector2 direction)
     {
-        //Skips uneccessary calculations
+        // Skip unnecessary calculations
         if (direction == Vector2.zero)
             return;
 
@@ -78,18 +75,18 @@ public class PlayerMovement : MonoBehaviour
 
     private bool IsColliding(Vector2 direction)
     {
-
-        float distance = _moveSpeed * Time.fixedDeltaTime;
+        // Small "skin" helps prevent tiny overlaps due to timestep/rounding
+        float distance = _moveSpeed * Time.fixedDeltaTime + 0.01f;
 
         RaycastHit2D hit = Physics2D.BoxCast(
-            _rb.position,
-            _collider.size,
+            (Vector2)_collider.bounds.center, // correct origin (handles offset)
+            _collider.bounds.size,            // correct size in world units (handles scale)
             0f,
-            direction,
+            direction.normalized,
             distance,
-            _collisionLayer);
+            _collisionLayer
+        );
 
         return hit.collider != null;
-
     }
 }
