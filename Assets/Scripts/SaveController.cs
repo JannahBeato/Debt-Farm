@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using Unity.Cinemachine;
 using WorldTime;
@@ -6,23 +8,26 @@ using WorldTime;
 public class SaveController : MonoBehaviour
 {
     private string saveLocation;
-
+    private InventoryController inventoryController;
+    // Start is called before the first frame update
     void Start()
     {
+        //Define save location
         saveLocation = Path.Combine(Application.persistentDataPath, "saveData.json");
+        inventoryController = FindObjectOfType<InventoryController>();
+
         LoadGame();
     }
 
     public void SaveGame()
     {
-        var player = GameObject.FindGameObjectWithTag("Player");
-        var confiner = FindObjectOfType<CinemachineConfiner2D>();
         var worldTime = FindObjectOfType<WorldTime.WorldTime>();
 
         SaveData saveData = new SaveData
         {
-            playerPosition = player.transform.position,
-            mapBoundary = confiner.BoundingShape2D.name,
+            playerPosition = GameObject.FindGameObjectWithTag("Player").transform.position,
+            mapBoundary = FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D.name,
+            inventorySaveData = inventoryController.GetInventoryItems(),
             minutesOfDay = worldTime != null ? worldTime.GetMinutesOfDay() : 0
         };
 
@@ -39,6 +44,8 @@ public class SaveController : MonoBehaviour
 
             FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D =
                 GameObject.Find(saveData.mapBoundary).GetComponent<PolygonCollider2D>();
+
+            inventoryController.SetInventoryItems(saveData.inventorySaveData);
 
             var worldTime = FindObjectOfType<WorldTime.WorldTime>();
             if (worldTime != null)
