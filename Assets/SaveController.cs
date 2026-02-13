@@ -1,8 +1,7 @@
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using Unity.Cinemachine;
+using WorldTime;
 
 public class SaveController : MonoBehaviour
 {
@@ -16,10 +15,15 @@ public class SaveController : MonoBehaviour
 
     public void SaveGame()
     {
+        var player = GameObject.FindGameObjectWithTag("Player");
+        var confiner = FindObjectOfType<CinemachineConfiner2D>();
+        var worldTime = FindObjectOfType<WorldTime.WorldTime>();
+
         SaveData saveData = new SaveData
         {
-            playerPosition = GameObject.FindGameObjectWithTag("Player").transform.position,
-            mapBoundary = FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D.name
+            playerPosition = player.transform.position,
+            mapBoundary = confiner.BoundingShape2D.name,
+            minutesOfDay = worldTime != null ? worldTime.GetMinutesOfDay() : 0
         };
 
         File.WriteAllText(saveLocation, JsonUtility.ToJson(saveData));
@@ -35,6 +39,10 @@ public class SaveController : MonoBehaviour
 
             FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D =
                 GameObject.Find(saveData.mapBoundary).GetComponent<PolygonCollider2D>();
+
+            var worldTime = FindObjectOfType<WorldTime.WorldTime>();
+            if (worldTime != null)
+                worldTime.SetMinutesOfDay(saveData.minutesOfDay);
         }
         else
         {
