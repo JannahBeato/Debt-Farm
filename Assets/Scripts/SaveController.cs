@@ -9,12 +9,14 @@ public class SaveController : MonoBehaviour
 {
     private string saveLocation;
     private InventoryController inventoryController;
+    private HotbarController hotbarController;
     // Start is called before the first frame update
     void Start()
     {
         //Define save location
         saveLocation = Path.Combine(Application.persistentDataPath, "saveData.json");
         inventoryController = FindObjectOfType<InventoryController>();
+        hotbarController = FindObjectOfType<HotbarController>();
 
         LoadGame();
     }
@@ -28,6 +30,7 @@ public class SaveController : MonoBehaviour
             playerPosition = GameObject.FindGameObjectWithTag("Player").transform.position,
             mapBoundary = FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D.name,
             inventorySaveData = inventoryController.GetInventoryItems(),
+            hotbarSaveData = hotbarController.GetHotbarItems(),
             minutesOfDay = worldTime != null ? worldTime.GetMinutesOfDay() : 0
         };
 
@@ -46,6 +49,7 @@ public class SaveController : MonoBehaviour
                 GameObject.Find(saveData.mapBoundary).GetComponent<PolygonCollider2D>();
 
             inventoryController.SetInventoryItems(saveData.inventorySaveData);
+            hotbarController.SetHotbarItems(saveData.hotbarSaveData);
 
             var worldTime = FindObjectOfType<WorldTime.WorldTime>();
             if (worldTime != null)
