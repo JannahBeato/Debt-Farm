@@ -10,5 +10,11 @@ public class SaveData
     public string mapBoundary;
     public List<InventorySaveData> inventorySaveData;
     public List<InventorySaveData> hotbarSaveData;
-    public int minutesOfDay;
+
+    // NEW TIME DATA
+    public int date;
+    public int hour;
+    public int minutes;
+    public int totalNumDays;
+    public int totalNumWeeks;
 }
