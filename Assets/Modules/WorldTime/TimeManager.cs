@@ -22,10 +22,29 @@ public class TimeManager : MonoBehaviour
     private float secondsPerGameMinute;
     private float timer;
 
+    // Old event name (typo) - your ClockManager currently uses this.
+    public static UnityAction<DateTime> OnDateimeChanged;
+
+    // New/Correct event name - other scripts might use this.
     public static UnityAction<DateTime> OnDateTimeChanged;
+
+    // Midnight event (00:00)
     public static UnityAction OnSleepTimeReached;
 
-    private const int MinutesInDay = 1440;
+    // Pass-out event (02:00)
+    public static UnityAction OnPassOutTime;
+
+    // Minutes since midnight (0..1439)
+    public static int CurrentMinutesOfDay { get; private set; }
+
+    public const int MinutesInDay = 1440;
+    public const int MidnightMinutes = 0;     // 00:00
+    public const int PassOutMinutes = 120;    // 02:00
+    private const int NewDayStartMinutes = 420; // 07:00 (matches your DateTime day rollover)
+
+    private bool _sleepTimeTriggered;
+    private bool _passOutTriggered;
+    private int _lastTotalNumDays;
 
     private void Awake()
     {
@@ -35,13 +54,16 @@ public class TimeManager : MonoBehaviour
         CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
         _lastTotalNumDays = DateTime.TotalNumDays;
 
-        
+        // Avoid instantly firing pass-out if you load into 2:00-6:59.
+        _sleepTimeTriggered = CurrentMinutesOfDay == MidnightMinutes;
         _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
     }
 
     private void Start()
     {
-        OnDateTimeChanged?.Invoke(DateTime);
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+        _lastTotalNumDays = DateTime.TotalNumDays;
+        InvokeDateTimeChanged();
     }
 
     private void Update()
@@ -56,16 +78,46 @@ public class TimeManager : MonoBehaviour
             int prevTotalDays = DateTime.TotalNumDays;
 
             DateTime.AdvanceMinutes(1);
-            OnDateTimeChanged?.Invoke(DateTime);
 
-            CheckForSleepTime();
+            CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+
+            // Reset daily triggers when your DateTime advances the day (at 07:00)
+            if (DateTime.TotalNumDays != prevTotalDays || DateTime.TotalNumDays != _lastTotalNumDays)
+            {
+                _lastTotalNumDays = DateTime.TotalNumDays;
+                _sleepTimeTriggered = false;
+                _passOutTriggered = false;
+            }
+
+            // Midnight (00:00)
+            if (!_sleepTimeTriggered && CrossedTime(prevMinutesOfDay, CurrentMinutesOfDay, MidnightMinutes))
+            {
+                _sleepTimeTriggered = true;
+                OnSleepTimeReached?.Invoke();
+            }
+
+            // 2:00 AM pass-out
+            if (!_passOutTriggered && CrossedTime(prevMinutesOfDay, CurrentMinutesOfDay, PassOutMinutes))
+            {
+                _passOutTriggered = true;
+                OnPassOutTime?.Invoke();
+            }
+
+            InvokeDateTimeChanged();
         }
     }
 
     public void InitializeTime(int startDate, int startHour, int startMinutes)
     {
         DateTime = new DateTime(startDate, startHour, startMinutes);
-        OnDateTimeChanged?.Invoke(DateTime);
+
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+        _lastTotalNumDays = DateTime.TotalNumDays;
+
+        _sleepTimeTriggered = CurrentMinutesOfDay == MidnightMinutes;
+        _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
+
+        InvokeDateTimeChanged();
     }
 
     public void LoadTime(int date, int hour, int minutes, int totalNumDays, int totalNumWeeks)
@@ -73,46 +125,50 @@ public class TimeManager : MonoBehaviour
         DateTime.SetDate(date);
         DateTime.SetTime(hour, minutes);
         DateTime.SetTotals(totalNumDays, totalNumWeeks);
-        OnDateTimeChanged?.Invoke(DateTime);
+
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+        _lastTotalNumDays = DateTime.TotalNumDays;
+
+        _sleepTimeTriggered = CurrentMinutesOfDay == MidnightMinutes;
+        _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
+
+        InvokeDateTimeChanged();
     }
 
-    private void CheckForSleepTime()
-    {
-        if (DateTime.Hour == 2 && DateTime.Minutes == 0) 
-        {
-            OnSleepTimeReached?.Invoke();
-        }
-    }
-
-
+    // Your old Sleep() kept
     public void Sleep()
     {
-        DateTime.StartNewDayAt(7);
-        OnDateTimeChanged?.Invoke(DateTime);
+        StartNewDayAt(7, 0);
     }
 
-
+    // New helper for your sleep/pass-out system
     public void StartNewDayAt(int startHour, int startMinutes)
     {
         DateTime.StartNewDayAt(startHour, startMinutes);
 
         CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
-
         _lastTotalNumDays = DateTime.TotalNumDays;
+
+        _sleepTimeTriggered = false;
         _passOutTriggered = false;
 
-        OnDatetimeChanged?.Invoke(DateTime);
+        InvokeDateTimeChanged();
     }
 
+    private void InvokeDateTimeChanged()
+    {
+        OnDateimeChanged?.Invoke(DateTime);     // old typo name
+        OnDateTimeChanged?.Invoke(DateTime);    // correct name
+    }
 
+    // True if target occurred between "from" (exclusive) and "to" (inclusive), handling wrap over midnight
     private bool CrossedTime(int from, int to, int target)
     {
-        if (from <= to)
-        {
-            return from < target && target <= to;
-        }
+        if (from == to) return false;
 
-        // Wrapped over midnight
+        if (from <= to)
+            return from < target && target <= to;
+
         return (from < target && target < MinutesInDay) || (0 <= target && target <= to);
     }
 }
@@ -174,7 +230,7 @@ public class DateTime
         if (hour >= 24)
             hour = 0;
 
-        
+        // Your design: new day happens at 07:00
         if (hour == 7)
             AdvanceDay();
     }
@@ -196,35 +252,7 @@ public class DateTime
     }
     #endregion
 
-    #region Bool Checks
-    public bool IsNight()
-    {
-        return hour >= 18 || hour < 6;
-    }
-
-    public bool IsMorning()
-    {
-        return hour >= 6 && hour < 12;
-    }
-
-    public bool IsAfternoon()
-    {
-        return hour >= 12 && hour < 18;
-    }
-    #endregion
-
-    #region ToStrings
-    public override string ToString()
-    {
-        return $"{day} {date} - {hour:00}:{minutes:00} " +
-               $"(Total Days: {totalNumDays} | Total Weeks: {totalNumWeeks})";
-    }
-    #endregion
-
-    public int GetMinutesOfDay()
-    {
-        return hour * 60 + minutes;
-    }
+    public int GetMinutesOfDay() => hour * 60 + minutes;
 
     public void SetTime(int newHour, int newMinutes)
     {
@@ -245,7 +273,7 @@ public class DateTime
         totalNumWeeks = totalWeeks;
     }
 
-
+    // Updated: supports hour + minutes
     public void StartNewDayAt(int startHour, int startMinutes)
     {
         AdvanceDay();
@@ -253,7 +281,7 @@ public class DateTime
         minutes = Mathf.Clamp(startMinutes, 0, 59);
     }
 
-
+    // Backwards compatible
     public void StartNewDayAt(int startHour)
     {
         StartNewDayAt(startHour, 0);

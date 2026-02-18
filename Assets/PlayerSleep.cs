@@ -12,10 +12,11 @@ public class PlayerSleep : MonoBehaviour
 
     private void Update()
     {
-        // TEST INPUT (replace with your bed interaction):
-        // Example later: when interacting with Bed tile/object -> _endDay.SleepNow();
-        if (Input.GetKeyDown(KeyCode.E))
+        // Use your existing input system
+        if (InputManager.InteractPressed)
         {
+            // IMPORTANT: In the future, only call this when player is interacting with the BED.
+            // For now this matches your test behavior without using UnityEngine.Input.
             _endDay.SleepNow();
         }
     }
