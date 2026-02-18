@@ -18,7 +18,7 @@ public class TimeManager : MonoBehaviour
 
     [Header("Day Length Settings")]
     [SerializeField] private float realSecondsPerGameDay = 15f;
-    
+
     private float secondsPerGameMinute;
     private float timer;
 
@@ -31,6 +31,12 @@ public class TimeManager : MonoBehaviour
     {
         secondsPerGameMinute = realSecondsPerGameDay / MinutesInDay;
         DateTime = new DateTime(dateInMonth, hour, minutes);
+
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+        _lastTotalNumDays = DateTime.TotalNumDays;
+
+        
+        _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
     }
 
     private void Start()
@@ -45,6 +51,10 @@ public class TimeManager : MonoBehaviour
         if (timer >= secondsPerGameMinute)
         {
             timer -= secondsPerGameMinute;
+
+            int prevMinutesOfDay = DateTime.GetMinutesOfDay();
+            int prevTotalDays = DateTime.TotalNumDays;
+
             DateTime.AdvanceMinutes(1);
             OnDateTimeChanged?.Invoke(DateTime);
 
@@ -74,6 +84,7 @@ public class TimeManager : MonoBehaviour
         }
     }
 
+
     public void Sleep()
     {
         DateTime.StartNewDayAt(7);
@@ -81,6 +92,29 @@ public class TimeManager : MonoBehaviour
     }
 
 
+    public void StartNewDayAt(int startHour, int startMinutes)
+    {
+        DateTime.StartNewDayAt(startHour, startMinutes);
+
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+
+        _lastTotalNumDays = DateTime.TotalNumDays;
+        _passOutTriggered = false;
+
+        OnDatetimeChanged?.Invoke(DateTime);
+    }
+
+
+    private bool CrossedTime(int from, int to, int target)
+    {
+        if (from <= to)
+        {
+            return from < target && target <= to;
+        }
+
+        // Wrapped over midnight
+        return (from < target && target < MinutesInDay) || (0 <= target && target <= to);
+    }
 }
 
 [System.Serializable]
@@ -98,13 +132,13 @@ public class DateTime
 
     #region Properties
     public Days Day => day;
-    public int Date => date; //function: public int Date => get { return date; }
+    public int Date => date;
     public int Hour => hour;
     public int Minutes => minutes;
 
     public int TotalNumDays => totalNumDays;
     public int TotalNumWeeks => totalNumWeeks;
-    public int CurrentWeek => totalNumWeeks % 16 == 0 ? 16 : totalNumWeeks % 16; // 16 weeks in a season (can be changed in the future)
+    public int CurrentWeek => totalNumWeeks % 16 == 0 ? 16 : totalNumWeeks % 16;
     #endregion
 
     #region Constructor
@@ -118,13 +152,14 @@ public class DateTime
 
         day = (Days)(date % 7);
         if (day == 0) day = Days.Sunday;
-        #endregion
     }
+    #endregion
+
     #region Time Advancement
     public void AdvanceMinutes(int minutesToAdvance)
     {
         minutes += minutesToAdvance;
-        
+
         while (minutes >= 60)
         {
             minutes -= 60;
@@ -132,13 +167,13 @@ public class DateTime
         }
     }
 
-
     private void AdvanceHours()
     {
         hour++;
 
         if (hour >= 24)
             hour = 0;
+
         
         if (hour == 7)
             AdvanceDay();
@@ -148,18 +183,17 @@ public class DateTime
     {
         date++;
         totalNumDays++;
-        
+
         if (day == Days.Sunday)
         {
             day = Days.Monday;
             totalNumWeeks++;
-            }
+        }
         else
         {
             day++;
         }
     }
-
     #endregion
 
     #region Bool Checks
@@ -183,14 +217,15 @@ public class DateTime
     public override string ToString()
     {
         return $"{day} {date} - {hour:00}:{minutes:00} " +
-           $"(Total Days: {totalNumDays} | Total Weeks: {totalNumWeeks})";
-           }
+               $"(Total Days: {totalNumDays} | Total Weeks: {totalNumWeeks})";
+    }
     #endregion
 
     public int GetMinutesOfDay()
     {
         return hour * 60 + minutes;
     }
+
     public void SetTime(int newHour, int newMinutes)
     {
         hour = Mathf.Clamp(newHour, 0, 23);
@@ -210,14 +245,20 @@ public class DateTime
         totalNumWeeks = totalWeeks;
     }
 
-    public void StartNewDayAt(int startHour)
+
+    public void StartNewDayAt(int startHour, int startMinutes)
     {
         AdvanceDay();
-        hour = startHour;
-        minutes = 0;
+        hour = Mathf.Clamp(startHour, 0, 23);
+        minutes = Mathf.Clamp(startMinutes, 0, 59);
+    }
+
+
+    public void StartNewDayAt(int startHour)
+    {
+        StartNewDayAt(startHour, 0);
     }
 }
-
 
 [System.Serializable]
 public enum Days
@@ -231,4 +272,3 @@ public enum Days
     Saturday = 6,
     Sunday = 7
 }
-
