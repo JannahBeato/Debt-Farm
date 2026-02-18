@@ -16,6 +16,9 @@ public class PlayerMovement : MonoBehaviour
     private Animator _animator;
     private BoxCollider2D _collider;
 
+    // ✅ Other scripts can read this (tools, interaction, etc.)
+    public Vector2 LastMotionVector { get; private set; } = Vector2.down;
+
     private const string _horizontal = "Horizontal";
     private const string _vertical = "Vertical";
     private const string _lastHorizontal = "LastHorizontal";
@@ -32,18 +35,18 @@ public class PlayerMovement : MonoBehaviour
     {
         ReadMovementInput();
 
-        // Animation
         _animator.SetFloat(_horizontal, _movement.x);
         _animator.SetFloat(_vertical, _movement.y);
 
-        // Store last direction for idle animation
+        // ✅ Update last facing direction for both animator + tools
         if (_movement != Vector2.zero)
         {
+            LastMotionVector = _movement;
+
             _animator.SetFloat(_lastHorizontal, _movement.x);
             _animator.SetFloat(_lastVertical, _movement.y);
         }
 
-        // ✅ Interact input now comes from InputManager
         if (InputManager.InteractPressed)
         {
             Vector3Int position = _tileManager.WorldToCell(transform.position);
