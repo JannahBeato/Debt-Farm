@@ -22,9 +22,11 @@ public class TimeManager : MonoBehaviour
     private float secondsPerGameMinute;
     private float timer;
 
-    public static UnityAction<DateTime> OnDateimeChanged;
+    public static UnityAction<DateTime> OnDateTimeChanged;
+    public static UnityAction OnSleepTimeReached;
 
     private const int MinutesInDay = 1440;
+
     private void Awake()
     {
         secondsPerGameMinute = realSecondsPerGameDay / MinutesInDay;
@@ -33,7 +35,7 @@ public class TimeManager : MonoBehaviour
 
     private void Start()
     {
-        OnDateimeChanged?.Invoke(DateTime);
+        OnDateTimeChanged?.Invoke(DateTime);
     }
 
     private void Update()
@@ -44,14 +46,16 @@ public class TimeManager : MonoBehaviour
         {
             timer -= secondsPerGameMinute;
             DateTime.AdvanceMinutes(1);
-            OnDateimeChanged?.Invoke(DateTime);
+            OnDateTimeChanged?.Invoke(DateTime);
+
+            CheckForSleepTime();
         }
     }
 
     public void InitializeTime(int startDate, int startHour, int startMinutes)
     {
         DateTime = new DateTime(startDate, startHour, startMinutes);
-        OnDateimeChanged?.Invoke(DateTime);
+        OnDateTimeChanged?.Invoke(DateTime);
     }
 
     public void LoadTime(int date, int hour, int minutes, int totalNumDays, int totalNumWeeks)
@@ -59,13 +63,21 @@ public class TimeManager : MonoBehaviour
         DateTime.SetDate(date);
         DateTime.SetTime(hour, minutes);
         DateTime.SetTotals(totalNumDays, totalNumWeeks);
-        OnDateimeChanged?.Invoke(DateTime);
+        OnDateTimeChanged?.Invoke(DateTime);
+    }
+
+    private void CheckForSleepTime()
+    {
+        if (DateTime.Hour == 2 && DateTime.Minutes == 0) 
+        {
+            OnSleepTimeReached?.Invoke();
+        }
     }
 
     public void Sleep()
     {
         DateTime.StartNewDayAt(7);
-        OnDateimeChanged?.Invoke(DateTime);
+        OnDateTimeChanged?.Invoke(DateTime);
     }
 
 

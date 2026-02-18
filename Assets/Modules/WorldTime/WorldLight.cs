@@ -11,12 +11,12 @@ public class WorldLight : MonoBehaviour
     private void Awake()
     {
         _light = GetComponent<Light2D>();
-        TimeManager.OnDateimeChanged += OnTimeChanged;
+        TimeManager.OnDateTimeChanged += OnTimeChanged;
     }
 
     private void OnDestroy()
     {
-        TimeManager.OnDateimeChanged -= OnTimeChanged;
+        TimeManager.OnDateTimeChanged -= OnTimeChanged;
     }
 
     private void OnTimeChanged(DateTime dateTime)
