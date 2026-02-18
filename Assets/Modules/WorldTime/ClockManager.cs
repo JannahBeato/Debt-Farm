@@ -8,12 +8,12 @@ public class ClockManager : MonoBehaviour
 
     private void OnEnable()
     {
-        TimeManager.OnDateimeChanged += UpdateDateTime;
+        TimeManager.OnDatetimeChanged += UpdateDateTime;
     }
 
     private void OnDisable()
     {
-        TimeManager.OnDateimeChanged -= UpdateDateTime;
+        TimeManager.OnDatetimeChanged -= UpdateDateTime;
     }
 
     private void UpdateDateTime(DateTime dateTime)
