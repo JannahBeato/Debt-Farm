@@ -3,13 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Unity.Cinemachine;
-using WorldTime;
+
 
 public class SaveController : MonoBehaviour
 {
     private string saveLocation;
     private InventoryController inventoryController;
     private HotbarController hotbarController;
+    private TimeManager timeManager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -17,13 +19,14 @@ public class SaveController : MonoBehaviour
         saveLocation = Path.Combine(Application.persistentDataPath, "saveData.json");
         inventoryController = FindObjectOfType<InventoryController>();
         hotbarController = FindObjectOfType<HotbarController>();
+        timeManager = FindObjectOfType<TimeManager>();
 
         LoadGame();
     }
 
     public void SaveGame()
     {
-        var worldTime = FindObjectOfType<WorldTime.WorldTime>();
+        var TimeManager = FindObjectOfType<TimeManager>();
 
         SaveData saveData = new SaveData
         {
@@ -31,7 +34,13 @@ public class SaveController : MonoBehaviour
             mapBoundary = FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D.name,
             inventorySaveData = inventoryController.GetInventoryItems(),
             hotbarSaveData = hotbarController.GetHotbarItems(),
-            minutesOfDay = worldTime != null ? worldTime.GetMinutesOfDay() : 0
+            
+            // SAVE TIME DATA
+            date = TimeManager.CurrentDateTime.Date,
+            hour = TimeManager.CurrentDateTime.Hour,
+            minutes = TimeManager.CurrentDateTime.Minutes,
+            totalNumDays = TimeManager.CurrentDateTime.TotalNumDays,
+            totalNumWeeks = TimeManager.CurrentDateTime.TotalNumWeeks
         };
 
         File.WriteAllText(saveLocation, JsonUtility.ToJson(saveData));
@@ -51,13 +60,19 @@ public class SaveController : MonoBehaviour
             inventoryController.SetInventoryItems(saveData.inventorySaveData);
             hotbarController.SetHotbarItems(saveData.hotbarSaveData);
 
-            var worldTime = FindObjectOfType<WorldTime.WorldTime>();
-            if (worldTime != null)
-                worldTime.SetMinutesOfDay(saveData.minutesOfDay);
+            timeManager.InitializeTime( 
+                saveData.date,
+                saveData.hour,
+                saveData.minutes
+            );  
+
+            timeManager.CurrentDateTime.SetTotals(saveData.totalNumDays, saveData.totalNumWeeks);
+            
         }
         else
         {
             SaveGame();
+            return;
         }
     }
 }
