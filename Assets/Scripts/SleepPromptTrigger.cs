@@ -12,21 +12,37 @@ public class SleepPromptTrigger : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             playerInside = true;
-            sleepPromptUI.SetActive(true);
-            Time.timeScale = 0f; // pause game
+            if (sleepPromptUI != null) sleepPromptUI.SetActive(true);
+            Time.timeScale = 0f; // pause game while deciding
         }
     }
 
-    public void OnYesPressed() 
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        sleepPromptUI.SetActive(false);
-        Time.timeScale = 1f;
-        sleepManager.GoToNextDay();
+        if (collision.CompareTag("Player"))
+        {
+            playerInside = false;
+            if (sleepPromptUI != null) sleepPromptUI.SetActive(false);
+            Time.timeScale = 1f;
+        }
     }
 
-    public void OnNoPressed() 
+    public void OnYesPressed()
     {
-        sleepPromptUI.SetActive(false);
+        if (!playerInside) return;
+
+        if (sleepPromptUI != null) sleepPromptUI.SetActive(false);
+
+        // Do NOT set Time.timeScale here; SleepManager.GoToNextDay will restore it.
+        if (sleepManager != null)
+            sleepManager.GoToNextDay();
+        else
+            Time.timeScale = 1f;
+    }
+
+    public void OnNoPressed()
+    {
+        if (sleepPromptUI != null) sleepPromptUI.SetActive(false);
         Time.timeScale = 1f;
     }
 }
