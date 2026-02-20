@@ -3,6 +3,7 @@ using UnityEngine.Events;
 
 public class TimeManager : MonoBehaviour
 {
+
     [Header("Date & Time Settings")]
     [Range(1, 28)]
     public int dateInMonth = 1;
@@ -23,7 +24,7 @@ public class TimeManager : MonoBehaviour
     private float timer;
 
     
-    public static UnityAction<DateTime> OnDatetimeChanged;
+    public static UnityAction<DateTime> OnDateTimeChanged;
 
     
     public static UnityAction OnPassOutTime;
@@ -35,6 +36,7 @@ public class TimeManager : MonoBehaviour
     public const int MinutesInDay = 1440;
     public const int MidnightMinutes = 0;      // 00:00
     public const int PassOutMinutes = 120;     // 02:00
+    public const int OneAMMinutes = 60; // 1am 
     public const int NewDayStartMinutes = 420; // 07:00 (your day advances at 7)
 
     private bool _passOutTriggered;
@@ -56,7 +58,7 @@ public class TimeManager : MonoBehaviour
     {
         CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
         _lastTotalNumDays = DateTime.TotalNumDays;
-        OnDatetimeChanged?.Invoke(DateTime);
+        OnDateTimeChanged?.Invoke(DateTime);
     }
 
     private void Update()
@@ -88,7 +90,7 @@ public class TimeManager : MonoBehaviour
                 OnPassOutTime?.Invoke();
             }
 
-            OnDatetimeChanged?.Invoke(DateTime);
+            OnDateTimeChanged?.Invoke(DateTime);
         }
     }
 
@@ -100,7 +102,7 @@ public class TimeManager : MonoBehaviour
         _lastTotalNumDays = DateTime.TotalNumDays;
         _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
 
-        OnDatetimeChanged?.Invoke(DateTime);
+        OnDateTimeChanged?.Invoke(DateTime);
     }
 
     public void LoadTime(int date, int hour, int minutes, int totalNumDays, int totalNumWeeks)
@@ -114,7 +116,7 @@ public class TimeManager : MonoBehaviour
         _lastTotalNumDays = DateTime.TotalNumDays;
         _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
 
-        OnDatetimeChanged?.Invoke(DateTime);
+        OnDateTimeChanged?.Invoke(DateTime);
     }
 
 
@@ -133,7 +135,7 @@ public class TimeManager : MonoBehaviour
         _lastTotalNumDays = DateTime.TotalNumDays;
         _passOutTriggered = false;
 
-        OnDatetimeChanged?.Invoke(DateTime);
+        OnDateTimeChanged?.Invoke(DateTime);
     }
 
 

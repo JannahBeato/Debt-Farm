@@ -6,6 +6,7 @@ public class EnergyBarUI : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerEnergy _energy;
     [SerializeField] private Slider _slider;
+    [SerializeField] private Image _fillImage;
 
     private void Awake()
     {
@@ -13,7 +14,7 @@ public class EnergyBarUI : MonoBehaviour
             _energy = FindFirstObjectByType<PlayerEnergy>();
 
         if (_slider == null)
-            Debug.LogError("EnergyBarUI: Slider reference is missing.");
+            _slider = GetComponent<Slider>();
     }
 
     private void OnEnable()
