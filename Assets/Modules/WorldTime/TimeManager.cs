@@ -18,24 +18,45 @@ public class TimeManager : MonoBehaviour
 
     [Header("Day Length Settings")]
     [SerializeField] private float realSecondsPerGameDay = 15f;
-    
+
     private float secondsPerGameMinute;
     private float timer;
 
-    public static UnityAction<DateTime> OnDateTimeChanged;
-    public static UnityAction OnSleepTimeReached;
+    
+    public static UnityAction<DateTime> OnDatetimeChanged;
 
-    private const int MinutesInDay = 1440;
+    
+    public static UnityAction OnPassOutTime;
+
+    
+    public static int CurrentMinutesOfDay { get; private set; }
+
+    
+    public const int MinutesInDay = 1440;
+    public const int MidnightMinutes = 0;      // 00:00
+    public const int PassOutMinutes = 120;     // 02:00
+    public const int NewDayStartMinutes = 420; // 07:00 (your day advances at 7)
+
+    private bool _passOutTriggered;
+    private int _lastTotalNumDays;
 
     private void Awake()
     {
         secondsPerGameMinute = realSecondsPerGameDay / MinutesInDay;
         DateTime = new DateTime(dateInMonth, hour, minutes);
+
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+        _lastTotalNumDays = DateTime.TotalNumDays;
+
+        
+        _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
     }
 
     private void Start()
     {
-        OnDateTimeChanged?.Invoke(DateTime);
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+        _lastTotalNumDays = DateTime.TotalNumDays;
+        OnDatetimeChanged?.Invoke(DateTime);
     }
 
     private void Update()
@@ -45,17 +66,41 @@ public class TimeManager : MonoBehaviour
         if (timer >= secondsPerGameMinute)
         {
             timer -= secondsPerGameMinute;
-            DateTime.AdvanceMinutes(1);
-            OnDateTimeChanged?.Invoke(DateTime);
 
-            CheckForSleepTime();
+            int prevMinutesOfDay = DateTime.GetMinutesOfDay();
+            int prevTotalDays = DateTime.TotalNumDays;
+
+            DateTime.AdvanceMinutes(1);
+
+            CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+
+            
+            if (DateTime.TotalNumDays != prevTotalDays || DateTime.TotalNumDays != _lastTotalNumDays)
+            {
+                _lastTotalNumDays = DateTime.TotalNumDays;
+                _passOutTriggered = false;
+            }
+
+            
+            if (!_passOutTriggered && CrossedTime(prevMinutesOfDay, CurrentMinutesOfDay, PassOutMinutes))
+            {
+                _passOutTriggered = true;
+                OnPassOutTime?.Invoke();
+            }
+
+            OnDatetimeChanged?.Invoke(DateTime);
         }
     }
 
     public void InitializeTime(int startDate, int startHour, int startMinutes)
     {
         DateTime = new DateTime(startDate, startHour, startMinutes);
-        OnDateTimeChanged?.Invoke(DateTime);
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+
+        _lastTotalNumDays = DateTime.TotalNumDays;
+        _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
+
+        OnDatetimeChanged?.Invoke(DateTime);
     }
 
     public void LoadTime(int date, int hour, int minutes, int totalNumDays, int totalNumWeeks)
@@ -63,24 +108,45 @@ public class TimeManager : MonoBehaviour
         DateTime.SetDate(date);
         DateTime.SetTime(hour, minutes);
         DateTime.SetTotals(totalNumDays, totalNumWeeks);
-        OnDateTimeChanged?.Invoke(DateTime);
+
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+
+        _lastTotalNumDays = DateTime.TotalNumDays;
+        _passOutTriggered = CurrentMinutesOfDay >= PassOutMinutes && CurrentMinutesOfDay < NewDayStartMinutes;
+
+        OnDatetimeChanged?.Invoke(DateTime);
     }
 
-    private void CheckForSleepTime()
-    {
-        if (DateTime.Hour == 2 && DateTime.Minutes == 0) 
-        {
-            OnSleepTimeReached?.Invoke();
-        }
-    }
 
     public void Sleep()
     {
-        DateTime.StartNewDayAt(7);
-        OnDateTimeChanged?.Invoke(DateTime);
+        StartNewDayAt(7, 0);
     }
 
 
+    public void StartNewDayAt(int startHour, int startMinutes)
+    {
+        DateTime.StartNewDayAt(startHour, startMinutes);
+
+        CurrentMinutesOfDay = DateTime.GetMinutesOfDay();
+
+        _lastTotalNumDays = DateTime.TotalNumDays;
+        _passOutTriggered = false;
+
+        OnDatetimeChanged?.Invoke(DateTime);
+    }
+
+
+    private bool CrossedTime(int from, int to, int target)
+    {
+        if (from <= to)
+        {
+            return from < target && target <= to;
+        }
+
+        // Wrapped over midnight
+        return (from < target && target < MinutesInDay) || (0 <= target && target <= to);
+    }
 }
 
 [System.Serializable]
@@ -98,13 +164,13 @@ public class DateTime
 
     #region Properties
     public Days Day => day;
-    public int Date => date; //function: public int Date => get { return date; }
+    public int Date => date;
     public int Hour => hour;
     public int Minutes => minutes;
 
     public int TotalNumDays => totalNumDays;
     public int TotalNumWeeks => totalNumWeeks;
-    public int CurrentWeek => totalNumWeeks % 16 == 0 ? 16 : totalNumWeeks % 16; // 16 weeks in a season (can be changed in the future)
+    public int CurrentWeek => totalNumWeeks % 16 == 0 ? 16 : totalNumWeeks % 16;
     #endregion
 
     #region Constructor
@@ -118,13 +184,14 @@ public class DateTime
 
         day = (Days)(date % 7);
         if (day == 0) day = Days.Sunday;
-        #endregion
     }
+    #endregion
+
     #region Time Advancement
     public void AdvanceMinutes(int minutesToAdvance)
     {
         minutes += minutesToAdvance;
-        
+
         while (minutes >= 60)
         {
             minutes -= 60;
@@ -132,13 +199,13 @@ public class DateTime
         }
     }
 
-
     private void AdvanceHours()
     {
         hour++;
 
         if (hour >= 24)
             hour = 0;
+
         
         if (hour == 7)
             AdvanceDay();
@@ -148,18 +215,17 @@ public class DateTime
     {
         date++;
         totalNumDays++;
-        
+
         if (day == Days.Sunday)
         {
             day = Days.Monday;
             totalNumWeeks++;
-            }
+        }
         else
         {
             day++;
         }
     }
-
     #endregion
 
     #region Bool Checks
@@ -183,14 +249,15 @@ public class DateTime
     public override string ToString()
     {
         return $"{day} {date} - {hour:00}:{minutes:00} " +
-           $"(Total Days: {totalNumDays} | Total Weeks: {totalNumWeeks})";
-           }
+               $"(Total Days: {totalNumDays} | Total Weeks: {totalNumWeeks})";
+    }
     #endregion
 
     public int GetMinutesOfDay()
     {
         return hour * 60 + minutes;
     }
+
     public void SetTime(int newHour, int newMinutes)
     {
         hour = Mathf.Clamp(newHour, 0, 23);
@@ -210,14 +277,20 @@ public class DateTime
         totalNumWeeks = totalWeeks;
     }
 
-    public void StartNewDayAt(int startHour)
+
+    public void StartNewDayAt(int startHour, int startMinutes)
     {
         AdvanceDay();
-        hour = startHour;
-        minutes = 0;
+        hour = Mathf.Clamp(startHour, 0, 23);
+        minutes = Mathf.Clamp(startMinutes, 0, 59);
+    }
+
+
+    public void StartNewDayAt(int startHour)
+    {
+        StartNewDayAt(startHour, 0);
     }
 }
-
 
 [System.Serializable]
 public enum Days
@@ -231,4 +304,3 @@ public enum Days
     Saturday = 6,
     Sunday = 7
 }
-

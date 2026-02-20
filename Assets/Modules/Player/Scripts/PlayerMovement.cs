@@ -43,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
             _animator.SetFloat(_lastVertical, _movement.y);
         }
 
-        // ✅ Interact input now comes from InputManager
+        
         if (InputManager.InteractPressed)
         {
             Vector3Int position = _tileManager.WorldToCell(transform.position);
@@ -100,4 +100,14 @@ public class PlayerMovement : MonoBehaviour
 
         return hit.collider != null;
     }
+
+    
+    public void SetCanMove(bool canMove)
+    {
+        _canMove = canMove;
+
+        if (!canMove)
+            _movement = Vector2.zero;
+    }
+
 }
