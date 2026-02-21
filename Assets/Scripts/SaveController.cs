@@ -11,6 +11,7 @@ public class SaveController : MonoBehaviour
     private InventoryController inventoryController;
     private HotbarController hotbarController;
     private TimeManager timeManager;
+    private TileManager tileManager;
 
     // Start is called before the first frame update
     void Start()
@@ -20,6 +21,7 @@ public class SaveController : MonoBehaviour
         inventoryController = FindObjectOfType<InventoryController>();
         hotbarController = FindObjectOfType<HotbarController>();
         timeManager = FindObjectOfType<TimeManager>();
+        tileManager = FindObjectOfType<TileManager>();
 
         LoadGame();
     }
@@ -34,6 +36,7 @@ public class SaveController : MonoBehaviour
             mapBoundary = FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D.name,
             inventorySaveData = inventoryController.GetInventoryItems(),
             hotbarSaveData = hotbarController.GetHotbarItems(),
+            modifiedTiles = tileManager.GetModifiedTiles(),
             
             // SAVE TIME DATA
             date = TimeManager.CurrentDateTime.Date,
@@ -67,6 +70,8 @@ public class SaveController : MonoBehaviour
             );  
 
             timeManager.CurrentDateTime.SetTotals(saveData.totalNumDays, saveData.totalNumWeeks);
+
+            tileManager.LoadModifiedTiles(saveData.modifiedTiles);
             
         }
         else
