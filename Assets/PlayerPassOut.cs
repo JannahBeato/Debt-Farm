@@ -5,6 +5,7 @@ public class PlayerPassOut : MonoBehaviour
 {
     [Header("Refs")]
     [SerializeField] private TimeManager _timeManager;
+    [SerializeField] private DayCycleController _dayCycle;
     [SerializeField] private PlayerMovement _movement;
     [SerializeField] private PlayerEnergy _energy;
 
@@ -35,29 +36,14 @@ public class PlayerPassOut : MonoBehaviour
         if (_movement == null) _movement = GetComponent<PlayerMovement>();
         if (_energy == null) _energy = GetComponent<PlayerEnergy>();
         if (_timeManager == null) _timeManager = FindFirstObjectByType<TimeManager>();
+        if (_dayCycle == null) _dayCycle = FindFirstObjectByType<DayCycleController>();
     }
 
-    private void OnEnable()
-    {
-        TimeManager.OnPassOutTime += HandlePassOutTime;
-    }
-
-    private void OnDisable()
-    {
-        TimeManager.OnPassOutTime -= HandlePassOutTime;
-    }
-
-    private void HandlePassOutTime()
-    {
-        if (_endingDay) return;
-        StartCoroutine(EndDayRoutine(EndDayReason.PassOut, sleptAtMinutesOfDay: -1));
-    }
-
+    // Called by bed prompt
     public void SleepNow()
     {
         if (_endingDay) return;
 
-        // IMPORTANT: read time from the referenced TimeManager instance, not the static.
         int sleptAt = (_timeManager != null)
             ? _timeManager.CurrentDateTime.GetMinutesOfDay()
             : TimeManager.CurrentMinutesOfDay;
@@ -72,19 +58,15 @@ public class PlayerPassOut : MonoBehaviour
         if (_movement != null)
             _movement.SetCanMove(false);
 
-        // Realtime so this finishes even if another script sets Time.timeScale = 0
         yield return new WaitForSecondsRealtime(_endDayDelaySeconds);
 
-        // Decide energy BEFORE changing time
         float wakePercent = GetWakeEnergyPercent(reason, sleptAtMinutesOfDay);
 
-        // Advance day FIRST (prevents other "day start" listeners from overwriting our final energy)
         if (_timeManager != null)
             _timeManager.StartNewDayAt(_newDayStartHour, _newDayStartMinutes);
         else
             Debug.LogError("PlayerPassOut: TimeManager reference is missing. Assign it in the Inspector.");
 
-        // Apply energy last
         if (_energy != null)
             _energy.RestorePercent(wakePercent);
 
@@ -107,15 +89,10 @@ public class PlayerPassOut : MonoBehaviour
 
         float result;
 
-        // 07:00-23:59 is "before 1 AM" for the coming night
-        if (h >= 7)
-            result = _wakeEnergyIfSleepBefore1AM;          // 100%
-        else if (h == 0)
-            result = _wakeEnergyIfSleepBefore1AM;          // 100%
-        else if (h == 1)
-            result = _wakeEnergyIfSleepBetween1And2;       // 80%
-        else
-            result = _wakeEnergyIfAfter2OrPassOut;         // 20% for 02:00-06:59
+        if (h >= 7) result = _wakeEnergyIfSleepBefore1AM;
+        else if (h == 0) result = _wakeEnergyIfSleepBefore1AM;
+        else if (h == 1) result = _wakeEnergyIfSleepBetween1And2;
+        else result = _wakeEnergyIfAfter2OrPassOut;
 
         if (_debugLog)
             Debug.Log("EndDay: Slept at " + h.ToString("00") + ":" + m.ToString("00") +
@@ -123,6 +100,12 @@ public class PlayerPassOut : MonoBehaviour
 
         return result;
     }
+
+    public void PassOutNow()
+    {
+        if (_endingDay) return;
+        StartCoroutine(EndDayRoutine(EndDayReason.PassOut, sleptAtMinutesOfDay: -1));
+     }
 
     private enum EndDayReason
     {
