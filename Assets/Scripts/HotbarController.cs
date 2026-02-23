@@ -1,40 +1,73 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class HotbarController : MonoBehaviour
 {
+    [Header("UI")]
     public GameObject hotbarPanel;
     public GameObject slotPrefab;
-    public int slotCount = 10; //1-0 on the keyboard
+    public int slotCount = 10; // 1-0 on the keyboard
+
+    [Header("Highlight")]
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color selectedColor = Color.yellow;
+    [SerializeField] private int defaultSelectedIndex = 0;
 
     private ItemDictionary itemDictionary;
-
     private Key[] hotbarKeys;
+
+    private int selectedIndex;
 
     private void Awake()
     {
         itemDictionary = FindObjectOfType<ItemDictionary>();
 
-        // Hotbar keys based on slot count
+        // Hotbar keys based on slot count (1..9 then 0)
         hotbarKeys = new Key[slotCount];
         for (int i = 0; i < slotCount; i++)
         {
             hotbarKeys[i] = i < 9 ? (Key)((int)Key.Digit1 + i) : Key.Digit0;
         }
+
+        selectedIndex = Mathf.Clamp(defaultSelectedIndex, 0, slotCount - 1);
     }
 
-    // Update is called once per frame
+    private void Start()
+    {
+        // If your slots already exist in the scene, highlight the default one
+        if (hotbarPanel != null && hotbarPanel.transform.childCount >= slotCount)
+            SelectSlot(selectedIndex);
+    }
+
     void Update()
     {
-        // Check for key presses
+        // Check for key presses -> select slot
         for (int i = 0; i < slotCount; i++)
         {
-            if (Keyboard.current[hotbarKeys[i]].wasPressedThisFrame)
+            if (Keyboard.current != null && Keyboard.current[hotbarKeys[i]].wasPressedThisFrame)
             {
-                //UseItem
+                SelectSlot(i);
+
+                // Remove later
                 UseItemInSlot(i);
+            }
+        }
+    }
+
+    void SelectSlot(int index)
+    {
+        selectedIndex = Mathf.Clamp(index, 0, slotCount - 1);
+
+        // Color the Image component on each slot root (your prefab has Image)
+        for (int i = 0; i < slotCount; i++)
+        {
+            Transform slotTransform = hotbarPanel.transform.GetChild(i);
+            Image img = slotTransform.GetComponent<Image>();
+            if (img != null)
+            {
+                img.color = (i == selectedIndex) ? selectedColor : normalColor;
             }
         }
     }
@@ -52,13 +85,17 @@ public class HotbarController : MonoBehaviour
     public List<InventorySaveData> GetHotbarItems()
     {
         List<InventorySaveData> hotbarData = new List<InventorySaveData>();
-        foreach (Transform slotTranform in hotbarPanel.transform)
+        foreach (Transform slotTransform in hotbarPanel.transform)
         {
-            Slot slot = slotTranform.GetComponent<Slot>();
+            Slot slot = slotTransform.GetComponent<Slot>();
             if (slot.currentItem != null)
             {
                 Item item = slot.currentItem.GetComponent<Item>();
-                hotbarData.Add(new InventorySaveData { itemID = item.ID, slotIndex = slotTranform.GetSiblingIndex() });
+                hotbarData.Add(new InventorySaveData
+                {
+                    itemID = item.ID,
+                    slotIndex = slotTransform.GetSiblingIndex()
+                });
             }
         }
         return hotbarData;
@@ -66,19 +103,19 @@ public class HotbarController : MonoBehaviour
 
     public void SetHotbarItems(List<InventorySaveData> inventorySaveData)
     {
-        //Clear inventory panel - avoid duplicates
+        // Clear hotbar panel - avoid duplicates
         foreach (Transform child in hotbarPanel.transform)
         {
             Destroy(child.gameObject);
         }
 
-        //Create new slots
+        // Create new slots
         for (int i = 0; i < slotCount; i++)
         {
             Instantiate(slotPrefab, hotbarPanel.transform);
         }
 
-        //Populate slots with saved items
+        // Populate slots with saved items
         foreach (InventorySaveData data in inventorySaveData)
         {
             if (data.slotIndex < slotCount)
@@ -93,6 +130,22 @@ public class HotbarController : MonoBehaviour
                 }
             }
         }
+
+        // Re-apply highlight after rebuilding
+        SelectSlot(selectedIndex);
     }
 
+    // Optional helper if other scripts want the selected slot
+    public int GetSelectedIndex() => selectedIndex;
+
+    // Optional helper to get selected item
+    public Item GetSelectedItem()
+    {
+        if (hotbarPanel == null || hotbarPanel.transform.childCount <= selectedIndex) return null;
+
+        Slot slot = hotbarPanel.transform.GetChild(selectedIndex).GetComponent<Slot>();
+        if (slot == null || slot.currentItem == null) return null;
+
+        return slot.currentItem.GetComponent<Item>();
+    }
 }
