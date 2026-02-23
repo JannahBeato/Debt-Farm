@@ -101,37 +101,41 @@ public class HotbarController : MonoBehaviour
         return hotbarData;
     }
 
-    public void SetHotbarItems(List<InventorySaveData> inventorySaveData)
+    public void SetHotbarItems(List<InventorySaveData> saveData)
     {
-        // Clear hotbar panel - avoid duplicates
-        foreach (Transform child in hotbarPanel.transform)
-        {
-            Destroy(child.gameObject);
-        }
+        if (hotbarPanel == null) return;
+        if (saveData == null) saveData = new List<InventorySaveData>();
 
-        // Create new slots
-        for (int i = 0; i < slotCount; i++)
-        {
+        // Ensure we have exactly slotCount slots
+        while (hotbarPanel.transform.childCount < slotCount)
             Instantiate(slotPrefab, hotbarPanel.transform);
-        }
 
-        // Populate slots with saved items
-        foreach (InventorySaveData data in inventorySaveData)
+        // Clear items only (keep slots)
+        for (int i = 0; i < hotbarPanel.transform.childCount; i++)
         {
-            if (data.slotIndex < slotCount)
-            {
-                Slot slot = hotbarPanel.transform.GetChild(data.slotIndex).GetComponent<Slot>();
-                GameObject itemPrefab = itemDictionary.GetItemPrefab(data.itemID);
-                if (itemPrefab != null)
-                {
-                    GameObject item = Instantiate(itemPrefab, slot.transform);
-                    item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                    slot.currentItem = item;
-                }
-            }
+            var slot = hotbarPanel.transform.GetChild(i).GetComponent<Slot>();
+            if (slot == null) continue;
+
+            if (slot.currentItem != null) Destroy(slot.currentItem);
+            slot.currentItem = null;
         }
 
-        // Re-apply highlight after rebuilding
+        // Populate
+        foreach (var data in saveData)
+        {
+            if (data.slotIndex < 0 || data.slotIndex >= slotCount) continue;
+
+            var slot = hotbarPanel.transform.GetChild(data.slotIndex).GetComponent<Slot>();
+            if (slot == null) continue;
+
+            var itemPrefab = itemDictionary.GetItemPrefab(data.itemID);
+            if (itemPrefab == null) continue;
+
+            var item = Instantiate(itemPrefab, slot.transform);
+            item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            slot.currentItem = item;
+        }
+
         SelectSlot(selectedIndex);
     }
 

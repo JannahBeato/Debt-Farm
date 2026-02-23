@@ -1,49 +1,65 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using Unity.Cinemachine;
-
 
 public class SaveController : MonoBehaviour
 {
     private string saveLocation;
+
     private InventoryController inventoryController;
     private HotbarController hotbarController;
     private TimeManager timeManager;
     private TileManager tileManager;
+    private CinemachineConfiner2D confiner;
+    private Transform player;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
-        //Define save location
         saveLocation = Path.Combine(Application.persistentDataPath, "saveData.json");
-        inventoryController = FindObjectOfType<InventoryController>();
-        hotbarController = FindObjectOfType<HotbarController>();
-        timeManager = FindObjectOfType<TimeManager>();
-        tileManager = FindObjectOfType<TileManager>();
+        CacheRefs();
+    }
 
+    // Run load AFTER other scripts' Start() has initialized their internals
+    private IEnumerator Start()
+    {
+        yield return null;               // wait 1 frame (safe, simple)
         LoadGame();
+    }
+
+    private void CacheRefs()
+    {
+        if (inventoryController == null) inventoryController = FindObjectOfType<InventoryController>();
+        if (hotbarController == null) hotbarController = FindObjectOfType<HotbarController>();
+        if (timeManager == null) timeManager = FindObjectOfType<TimeManager>();
+        if (tileManager == null) tileManager = FindObjectOfType<TileManager>();
+        if (confiner == null) confiner = FindObjectOfType<CinemachineConfiner2D>();
+
+        if (player == null)
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+        }
     }
 
     public void SaveGame()
     {
-        var TimeManager = FindObjectOfType<TimeManager>();
+        CacheRefs();
+        if (player == null || timeManager == null) return;
 
         SaveData saveData = new SaveData
         {
-            playerPosition = GameObject.FindGameObjectWithTag("Player").transform.position,
-            mapBoundary = FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D.name,
-            inventorySaveData = inventoryController.GetInventoryItems(),
-            hotbarSaveData = hotbarController.GetHotbarItems(),
-            modifiedTiles = tileManager.GetModifiedTiles(),
-            
-            // SAVE TIME DATA
-            date = TimeManager.CurrentDateTime.Date,
-            hour = TimeManager.CurrentDateTime.Hour,
-            minutes = TimeManager.CurrentDateTime.Minutes,
-            totalNumDays = TimeManager.CurrentDateTime.TotalNumDays,
-            totalNumWeeks = TimeManager.CurrentDateTime.TotalNumWeeks
+            playerPosition = player.position,
+            mapBoundary = confiner != null && confiner.BoundingShape2D != null ? confiner.BoundingShape2D.name : "",
+            inventorySaveData = inventoryController != null ? inventoryController.GetInventoryItems() : null,
+            hotbarSaveData = hotbarController != null ? hotbarController.GetHotbarItems() : null,
+            modifiedTiles = tileManager != null ? tileManager.GetModifiedTiles() : null,
+
+            date = timeManager.CurrentDateTime.Date,
+            hour = timeManager.CurrentDateTime.Hour,
+            minutes = timeManager.CurrentDateTime.Minutes,
+            totalNumDays = timeManager.CurrentDateTime.TotalNumDays,
+            totalNumWeeks = timeManager.CurrentDateTime.TotalNumWeeks
         };
 
         File.WriteAllText(saveLocation, JsonUtility.ToJson(saveData));
@@ -51,33 +67,49 @@ public class SaveController : MonoBehaviour
 
     public void LoadGame()
     {
-        if (File.Exists(saveLocation))
-        {
-            SaveData saveData = JsonUtility.FromJson<SaveData>(File.ReadAllText(saveLocation));
+        CacheRefs();
 
-            GameObject.FindGameObjectWithTag("Player").transform.position = saveData.playerPosition;
-
-            FindObjectOfType<CinemachineConfiner2D>().BoundingShape2D =
-                GameObject.Find(saveData.mapBoundary).GetComponent<PolygonCollider2D>();
-
-            inventoryController.SetInventoryItems(saveData.inventorySaveData);
-            hotbarController.SetHotbarItems(saveData.hotbarSaveData);
-
-            timeManager.InitializeTime( 
-                saveData.date,
-                saveData.hour,
-                saveData.minutes
-            );  
-
-            timeManager.CurrentDateTime.SetTotals(saveData.totalNumDays, saveData.totalNumWeeks);
-
-            tileManager.LoadModifiedTiles(saveData.modifiedTiles);
-            
-        }
-        else
+        if (!File.Exists(saveLocation))
         {
             SaveGame();
             return;
         }
+
+        SaveData saveData = JsonUtility.FromJson<SaveData>(File.ReadAllText(saveLocation));
+
+        if (player != null)
+            player.position = saveData.playerPosition;
+
+        // Confiner boundary
+        if (confiner != null && !string.IsNullOrEmpty(saveData.mapBoundary))
+        {
+            var boundaryGO = GameObject.Find(saveData.mapBoundary);
+            if (boundaryGO != null)
+            {
+                var poly = boundaryGO.GetComponent<PolygonCollider2D>();
+                if (poly != null) confiner.BoundingShape2D = poly;
+            }
+        }
+
+        if (inventoryController != null && saveData.inventorySaveData != null)
+            inventoryController.SetInventoryItems(saveData.inventorySaveData);
+
+        if (hotbarController != null && saveData.hotbarSaveData != null)
+            hotbarController.SetHotbarItems(saveData.hotbarSaveData);
+
+        // Load ALL time fields in one go (you already have this method)
+        if (timeManager != null)
+        {
+            timeManager.LoadTime(
+                saveData.date,
+                saveData.hour,
+                saveData.minutes,
+                saveData.totalNumDays,
+                saveData.totalNumWeeks
+            );
+        }
+
+        if (tileManager != null && saveData.modifiedTiles != null)
+            tileManager.LoadModifiedTiles(saveData.modifiedTiles);
     }
 }
