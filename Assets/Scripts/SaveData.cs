@@ -12,10 +12,14 @@ public class SaveData
     public List<InventorySaveData> hotbarSaveData;
     public List<TileStateSaveData> modifiedTiles;
 
-    // NEW TIME DATA
+    // TIME
     public int date;
     public int hour;
     public int minutes;
     public int totalNumDays;
     public int totalNumWeeks;
+
+    // ENERGY
+    public int currentEnergy;
+    public int maxEnergy;
 }

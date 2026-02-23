@@ -13,6 +13,7 @@ public class SaveController : MonoBehaviour
     private TileManager tileManager;
     private CinemachineConfiner2D confiner;
     private Transform player;
+    private PlayerEnergy playerEnergy;
 
     private void Awake()
     {
@@ -34,6 +35,7 @@ public class SaveController : MonoBehaviour
         if (timeManager == null) timeManager = FindObjectOfType<TimeManager>();
         if (tileManager == null) tileManager = FindObjectOfType<TileManager>();
         if (confiner == null) confiner = FindObjectOfType<CinemachineConfiner2D>();
+        if (playerEnergy == null) playerEnergy = FindObjectOfType<PlayerEnergy>();
 
         if (player == null)
         {
@@ -59,7 +61,10 @@ public class SaveController : MonoBehaviour
             hour = timeManager.CurrentDateTime.Hour,
             minutes = timeManager.CurrentDateTime.Minutes,
             totalNumDays = timeManager.CurrentDateTime.TotalNumDays,
-            totalNumWeeks = timeManager.CurrentDateTime.TotalNumWeeks
+            totalNumWeeks = timeManager.CurrentDateTime.TotalNumWeeks,
+
+            currentEnergy = playerEnergy != null ? playerEnergy.CurrentEnergy : 0,
+            maxEnergy = playerEnergy != null ? playerEnergy.MaxEnergy : 0
         };
 
         File.WriteAllText(saveLocation, JsonUtility.ToJson(saveData));
@@ -111,5 +116,13 @@ public class SaveController : MonoBehaviour
 
         if (tileManager != null && saveData.modifiedTiles != null)
             tileManager.LoadModifiedTiles(saveData.modifiedTiles);
+
+        if (playerEnergy != null)
+        {
+            if (saveData.maxEnergy > 0)
+                playerEnergy.LoadEnergy(saveData.currentEnergy, saveData.maxEnergy);
+            else
+                playerEnergy.RestoreToFull();
+        }
     }
 }

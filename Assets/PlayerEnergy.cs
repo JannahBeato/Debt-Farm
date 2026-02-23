@@ -51,4 +51,11 @@ public class PlayerEnergy : MonoBehaviour
         _currentEnergy = Mathf.Clamp(value, 0, _maxEnergy);
         OnEnergyChanged?.Invoke(_currentEnergy, _maxEnergy);
     }
+    public void LoadEnergy(int current, int max)
+    {
+        // For older saves, max may be 0 -> ignore
+        if (max > 0) _maxEnergy = max;
+
+        SetEnergy(current); // uses clamp + fires OnEnergyChanged
+    }
 }
