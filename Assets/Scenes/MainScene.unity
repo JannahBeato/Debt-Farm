@@ -27010,6 +27010,9 @@ MonoBehaviour:
   hotbarPanel: {fileID: 560185998}
   slotPrefab: {fileID: 3111826539870307324, guid: 550ed6c36b84da1479d54bc70175fd72, type: 3}
   slotCount: 10
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  defaultSelectedIndex: 0
 --- !u!114 &560186001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27056,8 +27059,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: -5256508804588260846, guid: 95f5e8251f050734683b46fed3bc652a, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -70663,6 +70666,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9722fa858d0e164d8970b1424e18587, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  energyCostPerUse: 2
   offsetDistance: 1
   sizeOfInteractableArea: 1.2
 --- !u!1 &1935001287
