@@ -27788,12 +27788,12 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 791378219}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 926059617}
+  m_Father: {fileID: 1545747110}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -28695,6 +28695,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1873837642}
   m_SourcePrefab: {fileID: 100100000, guid: a0672ed1714d3a148a5828269e84d1b0, type: 3}
+--- !u!114 &886995651 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5651296712712640777, guid: a0672ed1714d3a148a5828269e84d1b0, type: 3}
+  m_PrefabInstance: {fileID: 886995650}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1873837639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 282e4029e195a95408fb240821dacdf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
 --- !u!1 &915153675
 GameObject:
   m_ObjectHideFlags: 0
@@ -29246,10 +29257,9 @@ RectTransform:
   - {fileID: 639136630}
   - {fileID: 560185999}
   - {fileID: 1587627764}
-  - {fileID: 791378222}
-  - {fileID: 1300526968}
   - {fileID: 1860008512}
   - {fileID: 853452257}
+  - {fileID: 1545747110}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -56681,10 +56691,13 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1743830343}
   - {fileID: 401168125}
   - {fileID: 776723469}
   - {fileID: 1339969420}
   - {fileID: 1826069809}
+  - {fileID: 1932195452}
+  - {fileID: 1229977351}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1097895825
@@ -59330,6 +59343,59 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &1229977350
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1229977351}
+  - component: {fileID: 1229977352}
+  m_Layer: 0
+  m_Name: EndOfDayService
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1229977351
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229977350}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1065875227}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1229977352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229977350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d742c183bce364caaafbb32d6030b6b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeManager: {fileID: 776723468}
+  playerEnergy: {fileID: 1873837642}
+  movement: {fileID: 886995651}
+  teleporter: {fileID: 1743830342}
+  player: {fileID: 1873837649}
+  houseSpawnPoint: {fileID: 1015210898}
+  sleepRules: {fileID: 11400000, guid: 9d5a78b1bef8544eaac268342a1fc7e6, type: 2}
+  newDayHour: 7
+  newDayMinutes: 0
 --- !u!1 &1300526967
 GameObject:
   m_ObjectHideFlags: 0
@@ -59361,7 +59427,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 926059617}
+  m_Father: {fileID: 1545747110}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -59412,9 +59478,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1826069807}
-        m_TargetAssemblyTypeName: SleepManager, Assembly-CSharp
-        m_MethodName: GoToNextDay
+      - m_Target: {fileID: 1545747111}
+        m_TargetAssemblyTypeName: SleepUIController, Assembly-CSharp
+        m_MethodName: OnNextDayButtonPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -62967,6 +63033,60 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &1545747109
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1545747110}
+  - component: {fileID: 1545747111}
+  m_Layer: 5
+  m_Name: SleepUIController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1545747110
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545747109}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 791378222}
+  - {fileID: 1300526968}
+  m_Father: {fileID: 926059617}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1545747111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545747109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d4b4e81c95d143449431a91f8eaa1d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dayCycle: {fileID: 1932195453}
+  endOfDay: {fileID: 1229977352}
+  fadeUI: {fileID: 791378223}
+  nextDayButton: {fileID: 1300526967}
 --- !u!1 &1548812314
 GameObject:
   m_ObjectHideFlags: 0
@@ -68854,6 +68974,50 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4c5cae0f03658924a8556d5a1fa73496, type: 3}
+--- !u!1 &1743830341
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1743830343}
+  - component: {fileID: 1743830342}
+  m_Layer: 0
+  m_Name: PlayerTeleportService
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1743830342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1743830341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ca8560f70f5f443fa202ab3bc57c4df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1743830343
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1743830341}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -436.9377, y: -251.03667, z: 0.2648957}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1065875227}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1750680639
 GameObject:
   m_ObjectHideFlags: 0
@@ -69163,12 +69327,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 075d68328ff92464098e9f89d399d689, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeManager: {fileID: 776723468}
-  nextDayButton: {fileID: 1300526967}
-  fadeUI: {fileID: 791378223}
-  player: {fileID: 1873837649}
-  houseSpawnPoint: {fileID: 1015210898}
-  playerEnergy: {fileID: 1873837642}
+  endOfDay: {fileID: 1229977352}
 --- !u!4 &1826069809
 Transform:
   m_ObjectHideFlags: 0
@@ -70940,6 +71099,51 @@ MonoBehaviour:
   energyCostPerUse: 2
   offsetDistance: 1
   sizeOfInteractableArea: 1.2
+--- !u!1 &1932195451
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1932195452}
+  - component: {fileID: 1932195453}
+  m_Layer: 0
+  m_Name: DayCycleController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1932195452
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1932195451}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1065875227}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1932195453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1932195451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5d90765339f34804baddc8c922e98a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeManager: {fileID: 776723468}
 --- !u!1 &1935001287
 GameObject:
   m_ObjectHideFlags: 0
@@ -71421,7 +71625,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sleepPromptUI: {fileID: 1860008511}
-  sleepManager: {fileID: 1826069807}
+  sleepUI: {fileID: 0}
+  playerMovement: {fileID: 0}
 --- !u!61 &2031182708
 BoxCollider2D:
   m_ObjectHideFlags: 0
