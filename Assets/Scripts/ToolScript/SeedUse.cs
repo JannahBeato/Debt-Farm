@@ -5,7 +5,7 @@ public class SeedUse : MonoBehaviour, IItemUse
     [SerializeField] private CropDefinitionSO crop;
 
     public int EnergyCost => 0;
-    public bool ConsumesItem => true; // you said 1 per slot for now
+    public bool ConsumesItem => true; // 1 per slot for now
 
     public bool TryUse(UseContext context)
     {
