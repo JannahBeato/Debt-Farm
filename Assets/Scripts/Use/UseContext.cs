@@ -10,6 +10,5 @@ public class UseContext
     public float ToolRadius;
 
     public TileManager TileManager;
-    // Later:
-    // public CropManager CropManager;
+    public CropManager CropManager;
 }

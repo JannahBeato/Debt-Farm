@@ -18,6 +18,7 @@ public class ToolsCharacterController : MonoBehaviour
     [Header("References")]
     [SerializeField] private HotbarController hotbarController;
     [SerializeField] private TileManager tileManager;
+    [SerializeField] private CropManager cropManager;
 
     private void Awake()
     {
@@ -27,6 +28,7 @@ public class ToolsCharacterController : MonoBehaviour
 
         if (hotbarController == null) hotbarController = FindFirstObjectByType<HotbarController>();
         if (tileManager == null) tileManager = FindFirstObjectByType<TileManager>();
+        if (cropManager == null) cropManager = FindFirstObjectByType<CropManager>();
     }
 
     private void Update()
@@ -63,7 +65,8 @@ public class ToolsCharacterController : MonoBehaviour
             Facing = facing.normalized,
             ToolOrigin = origin,
             ToolRadius = sizeOfInteractableArea,
-            TileManager = tileManager
+            TileManager = tileManager,
+            CropManager = cropManager
         };
 
         int cost = usable.EnergyCost;
