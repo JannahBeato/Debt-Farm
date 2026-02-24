@@ -29299,7 +29299,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pickUpDrop: {fileID: 5752557432622800008, guid: 06896770ed3925742bb45801940df557, type: 3}
-  dropCount: 5
+  dropCount: 1
   spread: 1
 --- !u!61 &926978791
 BoxCollider2D:
@@ -60548,6 +60548,7 @@ MonoBehaviour:
   - {fileID: 7832409929559836822, guid: fb64f017b974d84498047383ef4ac09d, type: 3}
   - {fileID: 5560498448794871373, guid: 4c5cae0f03658924a8556d5a1fa73496, type: 3}
   - {fileID: 8912452617022307068, guid: 06896770ed3925742bb45801940df557, type: 3}
+  - {fileID: 7013197598058381116, guid: 686071251785e4740a6a752beb26bbec, type: 3}
 --- !u!1 &1426213830
 GameObject:
   m_ObjectHideFlags: 0
@@ -71096,9 +71097,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9722fa858d0e164d8970b1424e18587, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  energyCostPerUse: 2
   offsetDistance: 1
   sizeOfInteractableArea: 1.2
+  hotbarController: {fileID: 0}
+  tileManager: {fileID: 0}
 --- !u!1 &1932195451
 GameObject:
   m_ObjectHideFlags: 0
