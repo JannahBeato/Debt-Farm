@@ -50,8 +50,6 @@ public class HotbarController : MonoBehaviour
             {
                 SelectSlot(i);
 
-                // Remove later
-                UseItemInSlot(i);
             }
         }
     }
@@ -151,5 +149,27 @@ public class HotbarController : MonoBehaviour
         if (slot == null || slot.currentItem == null) return null;
 
         return slot.currentItem.GetComponent<Item>();
+    }
+
+    public GameObject GetSelectedItemObject()
+    {
+        if (hotbarPanel == null || hotbarPanel.transform.childCount <= selectedIndex) return null;
+
+        Slot slot = hotbarPanel.transform.GetChild(selectedIndex).GetComponent<Slot>();
+        if (slot == null) return null;
+
+        return slot.currentItem;
+    }
+
+    public bool ConsumeSelectedItem()
+    {
+        if (hotbarPanel == null || hotbarPanel.transform.childCount <= selectedIndex) return false;
+
+        Slot slot = hotbarPanel.transform.GetChild(selectedIndex).GetComponent<Slot>();
+        if (slot == null || slot.currentItem == null) return false;
+
+        Destroy(slot.currentItem);
+        slot.currentItem = null;
+        return true;
     }
 }
