@@ -36,6 +36,12 @@ public class Item : MonoBehaviour
         }
     }
 
+    public void AddToStack(int amount = 1)
+    {
+        quantity += amount;
+        UpdateQuantityDisplay();
+    }
+
     public virtual void UseItem()
     {
         Debug.Log($"Using item: {Name}");
