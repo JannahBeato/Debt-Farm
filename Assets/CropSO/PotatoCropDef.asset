@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 647b7f10adf350d4186027afb6099407, type: 3}
   m_Name: PotatoCropDef
   m_EditorClassIdentifier: 
-  cropId: Carrot Seed
+  cropId: Potato Seed
   stageSprites:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: -6706443759888266369, guid: 936ba90b2100f4dc485274e85a7fa508, type: 3}
+  - {fileID: 3367870417585019489, guid: 936ba90b2100f4dc485274e85a7fa508, type: 3}
+  - {fileID: 2109489747490457824, guid: 936ba90b2100f4dc485274e85a7fa508, type: 3}
+  - {fileID: 2303892717736303439, guid: 936ba90b2100f4dc485274e85a7fa508, type: 3}
+  - {fileID: -5752873257389657301, guid: 936ba90b2100f4dc485274e85a7fa508, type: 3}

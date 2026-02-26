@@ -8,6 +8,9 @@ public class EndOfDayService : MonoBehaviour
     [SerializeField] private PlayerEnergy playerEnergy;
     [SerializeField] private PlayerMovement movement;
     [SerializeField] private PlayerTeleportService teleporter;
+    [SerializeField] private CropManager cropManager;
+    [SerializeField] private TileManager tileManager;
+
 
     [Header("Spawn")]
     [SerializeField] private Transform player;
@@ -31,6 +34,8 @@ public class EndOfDayService : MonoBehaviour
         if (teleporter == null) teleporter = FindFirstObjectByType<PlayerTeleportService>();
         if (playerEnergy == null && player != null) playerEnergy = player.GetComponent<PlayerEnergy>();
         if (movement == null && player != null) movement = player.GetComponent<PlayerMovement>();
+        if (cropManager == null) cropManager = FindFirstObjectByType<CropManager>();
+    if (tileManager == null) tileManager = FindFirstObjectByType<TileManager>();
     }
     
     public void SleepNow()
@@ -64,6 +69,9 @@ public class EndOfDayService : MonoBehaviour
             // advance day
             if (timeManager != null)
                 timeManager.StartNewDayAt(newDayHour, newDayMinutes);
+            
+            cropManager?.AdvanceDay();
+            tileManager?.ClearDailyWatered();
 
             // apply energy
             if (playerEnergy != null)

@@ -6,7 +6,11 @@ public class TileManager : MonoBehaviour
 {
     [SerializeField] private Tilemap interactableMap;
     [SerializeField] private TileBase hiddenInteractableTile;
-    [SerializeField] private TileBase interactedTile; 
+
+    [SerializeField] private TileBase soilTile; // plowed
+    [SerializeField] private TileBase wateredTile; // plowed + watered 
+
+
 
     private Dictionary<Vector3Int, string> modifiedTileStates = new Dictionary<Vector3Int, string>();
 
@@ -57,17 +61,30 @@ public class TileManager : MonoBehaviour
     public bool TrySetState(Vector3Int pos, string stateId)
     {
         if (!IsInteractable(pos)) return false;
-
-        if (stateId == "soil" || stateId == "watered")
+        
+        if (stateId == "soil")
         {
-            if (interactedTile == null)
+            if (soilTile == null)
             {
-                Debug.LogError("TileManager: interactedTile not assigned.");
+                Debug.LogError("TileManager: soilTile not assigned.");
+                return false;
+            }
+            
+            interactableMap.SetTile(pos, soilTile);
+            modifiedTileStates[pos] = "soil";
+            return true;
+        }
+
+        if (stateId == "watered")
+        {
+            if (wateredTile == null)
+            {
+                Debug.LogError("TileManager: wateredTile not assigned.");
                 return false;
             }
 
-            interactableMap.SetTile(pos, interactedTile);
-            modifiedTileStates[pos] = stateId;
+            interactableMap.SetTile(pos, wateredTile);
+            modifiedTileStates[pos] = "watered";
             return true;
         }
 
@@ -94,12 +111,13 @@ public class TileManager : MonoBehaviour
             if (modifiedTileStates[k] == "watered")
             {
                 modifiedTileStates[k] = "soil";
-                interactableMap.SetTile(k, interactedTile);
+                interactableMap.SetTile(k, soilTile);
             }
             else if (modifiedTileStates[k] == "interacted")
             {
+                // legacy cleanup
                 modifiedTileStates[k] = "soil";
-                interactableMap.SetTile(k, interactedTile);
+                interactableMap.SetTile(k, soilTile);
             }
         }
     }
@@ -125,7 +143,6 @@ public class TileManager : MonoBehaviour
         }
 
         modifiedTileStates.Clear();
-
         if (savedTiles == null) return;
 
         foreach (TileStateSaveData tileData in savedTiles)
@@ -133,18 +150,32 @@ public class TileManager : MonoBehaviour
             Vector3Int pos = tileData.GetPosition();
 
             string id = tileData.stateId;
+
             if (id == "interacted") id = "soil"; 
 
             modifiedTileStates[pos] = id;
 
 
-            if (id == "soil" || id == "watered")
+            if (id == "soil" )
             {
-                interactableMap.SetTile(pos, interactedTile);
+                if (soilTile == null)
+                {
+                    Debug.LogError("TileManager: soilTile not assigned");
+                    continue;
+                }
+                interactableMap.SetTile(pos, soilTile);
+            }
+            else if (id == "watered")
+            {
+                if (wateredTile == null)
+                {
+                    Debug.LogError("TileManager: wateredTile not assigned");
+                    continue;
+                }
+                interactableMap.SetTile(pos, wateredTile);
             }
             else
             {
-                // anything else -> hide (dirt)
                 interactableMap.SetTile(pos, hiddenInteractableTile);
             }
         }
