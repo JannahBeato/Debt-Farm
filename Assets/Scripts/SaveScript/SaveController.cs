@@ -15,16 +15,20 @@ public class SaveController : MonoBehaviour
     private Transform player;
     private PlayerEnergy playerEnergy;
 
+    // DIARY
+    private bool hasSeenIntroLetter;
+    private JournalManager journalManager;
+    private IntroLetterController introLetterController;
+
     private void Awake()
     {
         saveLocation = Path.Combine(Application.persistentDataPath, "saveData.json");
         CacheRefs();
     }
 
-    // Run load AFTER other scripts' Start() has initialized their internals
     private IEnumerator Start()
     {
-        yield return null;               // wait 1 frame (safe, simple)
+        yield return null; // wait 1 frame
         LoadGame();
     }
 
@@ -36,6 +40,9 @@ public class SaveController : MonoBehaviour
         if (tileManager == null) tileManager = FindObjectOfType<TileManager>();
         if (confiner == null) confiner = FindObjectOfType<CinemachineConfiner2D>();
         if (playerEnergy == null) playerEnergy = FindObjectOfType<PlayerEnergy>();
+
+        if (journalManager == null) journalManager = FindObjectOfType<JournalManager>();
+        if (introLetterController == null) introLetterController = FindObjectOfType<IntroLetterController>();
 
         if (player == null)
         {
@@ -64,7 +71,11 @@ public class SaveController : MonoBehaviour
             totalNumWeeks = timeManager.CurrentDateTime.TotalNumWeeks,
 
             currentEnergy = playerEnergy != null ? playerEnergy.CurrentEnergy : 0,
-            maxEnergy = playerEnergy != null ? playerEnergy.MaxEnergy : 0
+            maxEnergy = playerEnergy != null ? playerEnergy.MaxEnergy : 0,
+
+            // DIARY
+            hasSeenIntroLetter = hasSeenIntroLetter,
+            journalEntries = journalManager != null ? journalManager.Export() : null
         };
 
         File.WriteAllText(saveLocation, JsonUtility.ToJson(saveData));
@@ -74,9 +85,19 @@ public class SaveController : MonoBehaviour
     {
         CacheRefs();
 
+        // NEW GAME (no save yet)
         if (!File.Exists(saveLocation))
         {
+            hasSeenIntroLetter = false;
+
+            if (journalManager != null)
+                journalManager.Import(null);
+
             SaveGame();
+
+            if (introLetterController != null)
+                introLetterController.Show();
+
             return;
         }
 
@@ -102,7 +123,6 @@ public class SaveController : MonoBehaviour
         if (hotbarController != null && saveData.hotbarSaveData != null)
             hotbarController.SetHotbarItems(saveData.hotbarSaveData);
 
-        // Load ALL time fields in one go (you already have this method)
         if (timeManager != null)
         {
             timeManager.LoadTime(
@@ -124,5 +144,21 @@ public class SaveController : MonoBehaviour
             else
                 playerEnergy.RestoreToFull();
         }
+
+        // DIARY LOAD
+        hasSeenIntroLetter = saveData.hasSeenIntroLetter;
+
+        if (journalManager != null)
+            journalManager.Import(saveData.journalEntries);
+
+        // If not seen yet, show letter
+        if (!hasSeenIntroLetter && introLetterController != null)
+            introLetterController.Show();
+    }
+
+    public void MarkIntroLetterSeenAndSave()
+    {
+        hasSeenIntroLetter = true;
+        SaveGame();
     }
 }

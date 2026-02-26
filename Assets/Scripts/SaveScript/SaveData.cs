@@ -22,4 +22,18 @@ public class SaveData
     // ENERGY
     public int currentEnergy;
     public int maxEnergy;
+
+    // DIARY / TUTORIAL
+    public bool hasSeenIntroLetter;
+    public List<JournalEntrySaveData> journalEntries;
+}
+
+[System.Serializable]
+public class JournalEntrySaveData
+{
+    public string id;        // "intro-letter", "day1", etc.
+    public string title;     // "A Letter From..."
+    public string body;      // full text
+    public int dayAdded;     // optional (use your time system)
+
 }
