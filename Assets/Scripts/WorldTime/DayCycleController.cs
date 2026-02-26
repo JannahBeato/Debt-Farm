@@ -33,7 +33,6 @@ public class DayCycleController : MonoBehaviour
     {
         int minutes = dt.GetMinutesOfDay();
 
-        // ✅ FIRST UPDATE: only sync state, DO NOT fire events
         if (!initialized)
         {
             initialized = true;
@@ -45,7 +44,6 @@ public class DayCycleController : MonoBehaviour
             return;
         }
 
-        // reset per-day triggers when a new day starts
         if (dt.TotalNumDays != lastTotalDays)
         {
             lastTotalDays = dt.TotalNumDays;
