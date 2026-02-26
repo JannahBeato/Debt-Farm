@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerItemCollector : MonoBehaviour
 {
     private InventoryController inventoryController;
+    public static System.Action<Item> OnItemCollected;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,6 +24,7 @@ public class PlayerItemCollector : MonoBehaviour
 
                 if (itemAdded)
                 {
+                    OnItemCollected?.Invoke(item);
                     item.PickUp();
                     Destroy(collision.gameObject);
                 }

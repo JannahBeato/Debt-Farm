@@ -54,5 +54,8 @@ public class IntroLetterController : MonoBehaviour
         // Mark seen + save
         if (_saveController != null)
             _saveController.MarkIntroLetterSeenAndSave();
+
+        ObjectiveManager.Instance?.EnsurePickupAxeObjective();
+
     }
 }

@@ -36,4 +36,6 @@ public class JournalEntrySaveData
     public string body;      // full text
     public int dayAdded;     // optional (use your time system)
 
+    public bool isObjective;
+    public bool completed;
 }

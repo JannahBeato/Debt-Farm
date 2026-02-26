@@ -33,4 +33,18 @@ public class JournalManager : MonoBehaviour
         _entries.Clear();
         if (entries != null) _entries.AddRange(entries);
     }
+
+    public bool HasEntry(string id)
+    {
+        return _entries.Exists(e => e.id == id);
+    }
+
+    public bool SetCompleted(string id, bool completed)
+    {
+        int idx = _entries.FindIndex(e => e.id == id);
+        if (idx < 0) return false;
+
+        _entries[idx].completed = completed;
+        return true;
+    }
 }

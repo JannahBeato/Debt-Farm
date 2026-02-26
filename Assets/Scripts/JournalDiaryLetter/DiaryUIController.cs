@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
 public class DiaryUIController : MonoBehaviour
@@ -69,8 +69,12 @@ public class DiaryUIController : MonoBehaviour
             return;
         }
 
+        _index = Mathf.Clamp(_index, 0, JournalManager.Instance.Entries.Count - 1);
+
         var entry = JournalManager.Instance.Entries[_index];
-        if (titleText) titleText.text = entry.title;
-        if (bodyText) bodyText.text = entry.body;
+        string prefix = entry.isObjective ? (entry.completed ? "[X] " : "[ ] ") : "";
+
+        if (titleText) titleText.text = prefix + entry.title;
+        if (bodyText) bodyText.text = string.IsNullOrEmpty(entry.body) ? "" : entry.body;
     }
 }
