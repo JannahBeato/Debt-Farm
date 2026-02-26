@@ -11,11 +11,11 @@ PrefabInstance:
     - target: {fileID: 1612655575879434242, guid: 686071251785e4740a6a752beb26bbec, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 6232742816020895870, guid: 101235f87239bf34bbf4b7e532f7e201, type: 3}
+      objectReference: {fileID: 3153871905384636381, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
     - target: {fileID: 5121668982165407634, guid: 686071251785e4740a6a752beb26bbec, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 6232742816020895870, guid: 101235f87239bf34bbf4b7e532f7e201, type: 3}
+      objectReference: {fileID: 3153871905384636381, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
     - target: {fileID: 6136637041422293320, guid: 686071251785e4740a6a752beb26bbec, type: 3}
       propertyPath: m_Name
       value: Hoe Variant

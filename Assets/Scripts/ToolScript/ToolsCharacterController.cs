@@ -39,25 +39,28 @@ public class ToolsCharacterController : MonoBehaviour
 
     private void TryUseSelectedItem()
     {
-        // Don’t use tools while clicking UI (dragging items, menus, etc.)
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             return;
 
         if (hotbarController == null) return;
 
-        // 1) No selected item -> do nothing (this solves your “no item = cannot click”)
-        GameObject selectedItemGO = hotbarController.GetSelectedItemObject();
-        if (selectedItemGO == null) return;
-
-        // 2) Selected item must have a “use” component
-        IItemUse usable = selectedItemGO.GetComponent<IItemUse>();
-        if (usable == null) return;
-
+        // Compute origin first
         Vector2 facing = character.LastMotionVector;
         if (facing.sqrMagnitude < 0.001f)
             facing = Vector2.down;
 
         Vector2 origin = rgbd2d.position + facing.normalized * offsetDistance;
+
+        // Harvest first
+        if (TryHarvestAt(origin))
+            return;
+
+        // Then tools/items
+        GameObject selectedItemGO = hotbarController.GetSelectedItemObject();
+        if (selectedItemGO == null) return;
+
+        IItemUse usable = selectedItemGO.GetComponent<IItemUse>();
+        if (usable == null) return;
 
         var ctx = new UseContext
         {
@@ -70,21 +73,34 @@ public class ToolsCharacterController : MonoBehaviour
         };
 
         int cost = usable.EnergyCost;
+        if (cost > 0 && energy.CurrentEnergy < cost) return;
 
-        // 3) If too tired -> do nothing (no energy spent)
-        if (cost > 0 && energy.CurrentEnergy < cost)
-            return;
-
-        // 4) Try to use. If it FAILS -> no energy spent.
         bool success = usable.TryUse(ctx);
         if (!success) return;
 
-        // 5) Success -> now spend energy
-        if (cost > 0)
-            energy.TrySpend(cost);
+        if (cost > 0) energy.TrySpend(cost);
 
-        // 6) If it consumes the item (seeds) -> remove from hotbar
         if (usable.ConsumesItem)
             hotbarController.ConsumeSelectedItem();
+    }
+
+    // ✅ THIS MUST BE INSIDE THE CLASS
+    private bool TryHarvestAt(Vector2 origin)
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(origin, sizeOfInteractableArea);
+
+        foreach (Collider2D c in colliders)
+        {
+            // works even if collider is on a child
+            CropHarvestHit harvest = c.GetComponent<CropHarvestHit>();
+            if (harvest == null) harvest = c.GetComponentInParent<CropHarvestHit>();
+
+            if (harvest != null)
+            {
+                harvest.Hit();
+                return true;
+            }
+        }
+        return false;
     }
 }

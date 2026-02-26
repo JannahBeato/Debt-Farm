@@ -11,11 +11,11 @@ PrefabInstance:
     - target: {fileID: -7241540913102276696, guid: fb64f017b974d84498047383ef4ac09d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -9191924470218883087, guid: 101235f87239bf34bbf4b7e532f7e201, type: 3}
+      objectReference: {fileID: 3228662599699316609, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
     - target: {fileID: 5400519185968623672, guid: fb64f017b974d84498047383ef4ac09d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -9191924470218883087, guid: 101235f87239bf34bbf4b7e532f7e201, type: 3}
+      objectReference: {fileID: 3228662599699316609, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
     - target: {fileID: 6397393763474779874, guid: fb64f017b974d84498047383ef4ac09d, type: 3}
       propertyPath: m_Name
       value: WaterBucket Variant
