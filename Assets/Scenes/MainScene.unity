@@ -61393,6 +61393,7 @@ MonoBehaviour:
   - {fileID: 2080906909216451160, guid: 9e996c5cc53598740959b1ef525536b8, type: 3}
   - {fileID: 1291289787184310781, guid: fb69023535e9a4047a07313bb7fb30d5, type: 3}
   - {fileID: 747918661454670086, guid: ff44d644d81044f4384aa5369cff0368, type: 3}
+  - {fileID: 5153470793731330991, guid: bf4ee78b6caf6954c80d45fbb788ac60, type: 3}
 --- !u!1 &1426213830
 GameObject:
   m_ObjectHideFlags: 0
@@ -70417,6 +70418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ca8560f70f5f443fa202ab3bc57c4df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _confiner: {fileID: 0}
 --- !u!4 &1743830343
 Transform:
   m_ObjectHideFlags: 0
@@ -71110,6 +71112,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   endOfDay: {fileID: 1229977352}
+  fixCameraAfterSleepOrPassOut: 1
+  refreshAfterFrames: 2
+  playerTag: Player
 --- !u!4 &1826069809
 Transform:
   m_ObjectHideFlags: 0
