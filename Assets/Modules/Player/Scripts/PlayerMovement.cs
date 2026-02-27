@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool _canMove = true;
 
     [SerializeField] private TileManager _tileManager;
+    [SerializeField] private CropManager _cropManager;
 
     private Vector2 _movement;
     private Rigidbody2D _rb;
@@ -29,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
         _collider = GetComponent<BoxCollider2D>();
         _animator = GetComponent<Animator>();
+        if (_cropManager == null) _cropManager = FindFirstObjectByType<CropManager>();
     }
 
     private void Update()
@@ -49,12 +51,18 @@ public class PlayerMovement : MonoBehaviour
 
         if (InputManager.InteractPressed)
         {
-            Vector3Int position = _tileManager.WorldToCell(transform.position);
+            // Try the tile you're on
+            Vector3Int cell = _tileManager.WorldToCell(transform.position);
 
-            if (_tileManager.IsInteractable(position))
+            // Harvest FIRST (if ready), then stop so no other action happens
+            if (_cropManager != null && _cropManager.TryHarvest(cell))
+                return;
+
+            // Your existing tile interaction logic
+            if (_tileManager.IsInteractable(cell))
             {
-                Debug.Log("Interacted with tile at " + position);
-                _tileManager.SetInteracted(position);
+                Debug.Log("Interacted with tile at " + cell);
+                _tileManager.SetInteracted(cell);
             }
         }
     }

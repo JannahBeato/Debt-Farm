@@ -90,4 +90,19 @@ public class InventoryController : MonoBehaviour
             slot.currentItem = item;
         }
     }
+
+    public bool AddItemById(int itemId)
+    {
+        if (itemDictionary == null) itemDictionary = FindObjectOfType<ItemDictionary>();
+        if (itemDictionary == null)
+        {
+            Debug.LogError("InventoryController: ItemDictionary missing.");
+            return false;
+        }
+
+        GameObject uiPrefab = itemDictionary.GetItemPrefab(itemId);
+        if (uiPrefab == null) return false;
+
+        return AddItem(uiPrefab);
+    }
 }
