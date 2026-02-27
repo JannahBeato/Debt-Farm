@@ -25618,6 +25618,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Hoe Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 4224637088122786550, guid: 9e996c5cc53598740959b1ef525536b8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 3153871905384636381, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
+    - target: {fileID: 7769398142801024358, guid: 9e996c5cc53598740959b1ef525536b8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 3153871905384636381, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -60408,6 +60416,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: WaterBucket Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 4011482391293628755, guid: fb69023535e9a4047a07313bb7fb30d5, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 3228662599699316609, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
+    - target: {fileID: 7411019005282571971, guid: fb69023535e9a4047a07313bb7fb30d5, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 3228662599699316609, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -73008,6 +73024,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1612655575879434242, guid: 686071251785e4740a6a752beb26bbec, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 8198346204976274233, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
+    - target: {fileID: 5121668982165407634, guid: 686071251785e4740a6a752beb26bbec, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 8198346204976274233, guid: 548c1f5a39521ff46bc2942052012f9e, type: 3}
     - target: {fileID: 6136637041422293320, guid: 686071251785e4740a6a752beb26bbec, type: 3}
       propertyPath: m_Name
       value: Axe Variant
