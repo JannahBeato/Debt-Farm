@@ -70236,7 +70236,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileManager: {fileID: 1339969419}
   cropVisualPrefab: {fileID: 7489429005347551658, guid: dae36095e543b4e249c5cf35f8a7df18, type: 3}
-  potatoDropPrefab: {fileID: 0}
+  potatoDropPrefab: {fileID: 8358287897923319259, guid: bf4ee78b6caf6954c80d45fbb788ac60, type: 3}
 --- !u!4 &1711443304
 Transform:
   m_ObjectHideFlags: 0
