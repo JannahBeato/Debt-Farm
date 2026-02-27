@@ -19,3 +19,5 @@ MonoBehaviour:
   - {fileID: 2109489747490457824, guid: 936ba90b2100f4dc485274e85a7fa508, type: 3}
   - {fileID: 2303892717736303439, guid: 936ba90b2100f4dc485274e85a7fa508, type: 3}
   - {fileID: -5752873257389657301, guid: 936ba90b2100f4dc485274e85a7fa508, type: 3}
+  harvestItemPrefab: {fileID: 8707762847497840084, guid: b3379de0934eb244aa0648bb705e59a6, type: 3}
+  harvestAmount: 1

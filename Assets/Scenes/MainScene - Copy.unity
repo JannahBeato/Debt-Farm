@@ -25776,7 +25776,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -20.932386, y: 6.57405, z: -10}
+  m_LocalPosition: {x: -22.35, y: 10.23, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -60653,6 +60653,7 @@ MonoBehaviour:
   - {fileID: 2080906909216451160, guid: 9e996c5cc53598740959b1ef525536b8, type: 3}
   - {fileID: 1291289787184310781, guid: fb69023535e9a4047a07313bb7fb30d5, type: 3}
   - {fileID: 747918661454670086, guid: ff44d644d81044f4384aa5369cff0368, type: 3}
+  - {fileID: 5522086879575229344, guid: b3379de0934eb244aa0648bb705e59a6, type: 3}
 --- !u!1 &1426213830
 GameObject:
   m_ObjectHideFlags: 0
@@ -71452,11 +71453,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1926174141446660453, guid: 9e996c5cc53598740959b1ef525536b8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -22.31448
+      value: -19.9
       objectReference: {fileID: 0}
     - target: {fileID: 1926174141446660453, guid: 9e996c5cc53598740959b1ef525536b8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 8.463866
+      value: 8.74
       objectReference: {fileID: 0}
     - target: {fileID: 1926174141446660453, guid: 9e996c5cc53598740959b1ef525536b8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -72262,11 +72263,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1706985043484598976, guid: fb69023535e9a4047a07313bb7fb30d5, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -21.576326
+      value: -23.03
       objectReference: {fileID: 0}
     - target: {fileID: 1706985043484598976, guid: fb69023535e9a4047a07313bb7fb30d5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 8.382317
+      value: 8.96
       objectReference: {fileID: 0}
     - target: {fileID: 1706985043484598976, guid: fb69023535e9a4047a07313bb7fb30d5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
