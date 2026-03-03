@@ -17,13 +17,16 @@ public class DiaryUIController : MonoBehaviour
     [SerializeField] private Color objectiveIncompleteColor = Color.black;
     [SerializeField] private Color objectiveCompleteColor = new Color(0.45f, 0.45f, 0.45f, 1f);
 
-    private int _index = 0;
+    private const string PAGE_BREAK = "---PAGE---";
+
+    private int _entryIndex = 0;
+    private int _pageIndex = 0;
 
     private void Awake()
     {
         if (panel != null) panel.SetActive(false);
 
-        if (titleText != null) titleText.richText = true; // enables <s></s>
+        if (titleText != null) titleText.richText = true;
         if (bodyText != null) bodyText.richText = true;
     }
 
@@ -43,7 +46,8 @@ public class DiaryUIController : MonoBehaviour
         panel.SetActive(true);
         Time.timeScale = 0f;
 
-        _index = 0;
+        _entryIndex = 0;
+        _pageIndex = 0;
         Refresh();
     }
 
@@ -57,20 +61,44 @@ public class DiaryUIController : MonoBehaviour
 
     public void Next()
     {
-        var entries = JournalManager.Instance != null ? JournalManager.Instance.Entries : null;
-        if (entries == null || entries.Count == 0) return;
+        var jm = JournalManager.Instance;
+        if (jm == null || jm.Entries.Count == 0) return;
 
-        _index = Mathf.Min(_index + 1, entries.Count - 1);
+        var entry = jm.Entries[_entryIndex];
+        var pages = GetPages(entry);
+
+        if (_pageIndex < pages.Length - 1)
+        {
+            _pageIndex++;
+            Refresh();
+            return;
+        }
+
+        _entryIndex = Mathf.Min(_entryIndex + 1, jm.Entries.Count - 1);
+        _pageIndex = 0;
         Refresh();
     }
 
     public void Prev()
     {
-        var entries = JournalManager.Instance != null ? JournalManager.Instance.Entries : null;
-        if (entries == null || entries.Count == 0) return;
+        var jm = JournalManager.Instance;
+        if (jm == null || jm.Entries.Count == 0) return;
 
-        _index = Mathf.Max(_index - 1, 0);
-        Refresh();
+        if (_pageIndex > 0)
+        {
+            _pageIndex--;
+            Refresh();
+            return;
+        }
+
+        if (_entryIndex > 0)
+        {
+            _entryIndex--;
+            var entry = jm.Entries[_entryIndex];
+            var pages = GetPages(entry);
+            _pageIndex = Mathf.Max(0, pages.Length - 1);
+            Refresh();
+        }
     }
 
     private void Refresh()
@@ -81,22 +109,30 @@ public class DiaryUIController : MonoBehaviour
             if (titleText) titleText.text = "Diary";
             if (bodyText) bodyText.text = "No entries yet.";
             if (pageText) pageText.text = "";
-            if (prevButton) prevButton.interactable = false;
-            if (nextButton) nextButton.interactable = false;
+            SetButtonState(prevButton, false); // Added
+            SetButtonState(nextButton, false); // Added
             return;
         }
 
-        int count = jm.Entries.Count;
-        _index = Mathf.Clamp(_index, 0, count - 1);
+        int entryCount = jm.Entries.Count;
+        _entryIndex = Mathf.Clamp(_entryIndex, 0, entryCount - 1);
 
-        var entry = jm.Entries[_index];
+        var entry = jm.Entries[_entryIndex];
+        var pages = GetPages(entry);
+        _pageIndex = Mathf.Clamp(_pageIndex, 0, Mathf.Max(0, pages.Length - 1));
 
-        // Page indicator + arrow state
-        if (pageText) pageText.text = $"{_index + 1} / {count}";
-        if (prevButton) prevButton.interactable = _index > 0;
-        if (nextButton) nextButton.interactable = _index < count - 1;
+        if (pageText)
+        {
+            string pagePart = pages.Length > 1 ? $" (Page {_pageIndex + 1}/{pages.Length})" : "";
+            pageText.text = $"{_entryIndex + 1} / {entryCount}{pagePart}";
+        }
 
-        // Title render
+        bool canPrev = _pageIndex > 0 || _entryIndex > 0;
+        bool canNext = (_pageIndex < pages.Length - 1) || (_entryIndex < entryCount - 1);
+
+        SetButtonState(prevButton, canPrev); // Added
+        SetButtonState(nextButton, canNext); // Added
+
         if (entry.isObjective)
         {
             if (entry.completed)
@@ -125,6 +161,36 @@ public class DiaryUIController : MonoBehaviour
             }
         }
 
-        if (bodyText) bodyText.text = string.IsNullOrEmpty(entry.body) ? "" : entry.body;
+        if (bodyText) bodyText.text = pages.Length > 0 ? pages[_pageIndex] : "";
+    }
+
+    private string[] GetPages(JournalEntrySaveData entry)
+    {
+        string body = entry != null && !string.IsNullOrEmpty(entry.body) ? entry.body : "";
+        body = body.Replace("\r\n", "\n");
+
+        var parts = body.Split(new[] { PAGE_BREAK }, System.StringSplitOptions.None);
+        for (int i = 0; i < parts.Length; i++)
+            parts[i] = parts[i].Trim('\n', ' ');
+
+        if (parts.Length == 0) return new[] { "" };
+        if (parts.Length == 1 && string.IsNullOrEmpty(parts[0])) return new[] { "" };
+
+        return parts;
+    }
+
+    private static void SetButtonState(Button button, bool enabled) // Added
+    {
+        if (button == null) return;
+
+        button.interactable = enabled;
+
+        var img = button.image;
+        if (img != null)
+        {
+            var c = img.color;
+            c.a = enabled ? 1f : 0.35f;
+            img.color = c;
+        }
     }
 }
