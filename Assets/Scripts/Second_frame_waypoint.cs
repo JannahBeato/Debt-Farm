@@ -1,3 +1,4 @@
+using System.Reflection;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ public class SecondFrameWaypoint : MonoBehaviour
     [Header("Player Move Offset")]
     [SerializeField] private Direction _direction;
     [SerializeField] private float _offsetAmount = 2f;
+
+    private MethodInfo _invalidateMethod;
 
     private enum Direction
     {
@@ -26,6 +29,15 @@ public class SecondFrameWaypoint : MonoBehaviour
     {
         _confiner = FindObjectOfType<CinemachineConfiner2D>();
 
+        if (_confiner != null)
+        {
+            // Cinemachine 2: InvalidatePathCache()
+            // Cinemachine 3: InvalidateCache()
+            var t = _confiner.GetType();
+            _invalidateMethod =
+                t.GetMethod("InvalidateCache", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                ?? t.GetMethod("InvalidatePathCache", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        }
 
         Collider2D col = GetComponent<Collider2D>();
         col.isTrigger = true;
@@ -37,8 +49,6 @@ public class SecondFrameWaypoint : MonoBehaviour
             return;
 
         UpdateCameraConfiner();
-
-  
         UpdatePlayerPosition(collision.gameObject);
     }
 
@@ -48,6 +58,9 @@ public class SecondFrameWaypoint : MonoBehaviour
             return;
 
         _confiner.BoundingShape2D = _mapBoundary;
+
+        // IMPORTANT: refresh confiner cache so the camera uses the new boundary immediately
+        _invalidateMethod?.Invoke(_confiner, null);
     }
 
     private void UpdatePlayerPosition(GameObject player)
