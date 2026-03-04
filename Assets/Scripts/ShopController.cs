@@ -132,11 +132,11 @@ public class ShopController : MonoBehaviour
 
         GameObject slotObj = Instantiate(shopSlotPrefab, grid);
 
-        // Optional: if your slot prefab has a Slot component, keep it consistent
+        
         var slotComponent = slotObj.GetComponent<Slot>();
         if (slotComponent == null) slotComponent = slotObj.AddComponent<Slot>();
 
-        // Get item prefab
+        
         GameObject itemPrefab = itemDictionary.GetItemPrefab(itemID);
         if (itemPrefab == null)
         {
@@ -145,7 +145,7 @@ public class ShopController : MonoBehaviour
             return;
         }
 
-        // Spawn item UI into slot
+        
         GameObject itemInstance = Instantiate(itemPrefab, slotObj.transform);
         slotComponent.currentItem = itemInstance;
 
@@ -154,7 +154,7 @@ public class ShopController : MonoBehaviour
         itemInstance.transform.localPosition = Vector3.zero;
         itemInstance.transform.localScale = Vector3.one;
 
-        // Quantity support (works if your Item has quantity + UpdateQuantityDisplay)
+        
         var item = itemInstance.GetComponent<Item>();
         if (item != null)
         {
@@ -162,7 +162,7 @@ public class ShopController : MonoBehaviour
             InvokeIfExists(item, "UpdateQuantityDisplay");
         }
 
-        // Price support (works if your Item has buyPrice / GetSellPrice)
+        
         int price = 0;
         if (item != null)
         {
@@ -172,7 +172,7 @@ public class ShopController : MonoBehaviour
                 price = InvokeIntMethod(item, "GetSellPrice", fallback: 0);
         }
 
-        // Attach context data (useful for ShopSlot or click logic)
+        
         var ctx = slotObj.GetComponent<ShopUISlotContext>();
         if (ctx == null) ctx = slotObj.AddComponent<ShopUISlotContext>();
         ctx.isShop = isShop;
@@ -181,17 +181,41 @@ public class ShopController : MonoBehaviour
         ctx.quantity = quantity;
         ctx.price = price;
 
-        // Pass data into ShopSlot if present
+        
         var shopSlot = slotObj.GetComponent<ShopSlot>();
         if (shopSlot != null)
         {
             shopSlot.SetItem(itemInstance, price);
 
-            // Optional: if your ShopSlot class has a method/field for original slot, set it safely
-            // (won't break if it doesn't exist)
+            
             TrySetFieldOrProperty(shopSlot, "originalSlot", originalSlot);
             TrySetFieldOrProperty(shopSlot, "isShop", isShop);
+
+            //replace dragging with right clicking
+
+            ItemDragHandler dragHandler = itemInstance.GetComponent<ItemDragHandler>();
+            if(dragHandler) dragHandler.enabled = false;
+
+            var handler = itemInstance.GetComponent<ShopItemHandler>();
+            if (handler == null) handler = itemInstance.AddComponent<ShopItemHandler>();
+
+            handler.Initialize(isShop, originalSlot);
         }
+    }
+    public void AddItemToShop(int itemID, int quantity)
+    {
+        if (!currentShop) return;
+        currentShop.AddToStock(itemID, quantity);
+        RefreshShopDisplay();
+    }
+
+    public bool RemoveItemFromShop(int itemID, int quantity)
+    {
+        if (!currentShop) return false;
+        bool success = currentShop.RemoveFromStock(itemID, quantity);
+        if (success)
+            RefreshShopDisplay();
+        return success;
     }
 
     private static void ClearChildren(Transform parent)
@@ -200,7 +224,7 @@ public class ShopController : MonoBehaviour
             Destroy(parent.GetChild(i).gameObject);
     }
 
-    // ---------- Reflection helpers (keeps this drop-in even if your Item evolves) ----------
+    
 
     private static int GetIntMember(object obj, string name, int fallback)
     {
@@ -277,9 +301,7 @@ public class ShopController : MonoBehaviour
     }
 }
 
-/// <summary>
-/// Attached to each shop UI slot instance so other scripts (like ShopSlot) can read what it represents.
-/// </summary>
+
 public class ShopUISlotContext : MonoBehaviour
 {
     public bool isShop;

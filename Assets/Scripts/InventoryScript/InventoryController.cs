@@ -18,7 +18,6 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -26,7 +25,6 @@ public class InventoryController : MonoBehaviour
         }
         Instance = this;
 
-        // Cache dictionary
         itemDictionary = FindObjectOfType<ItemDictionary>();
         if (itemDictionary == null)
             Debug.LogError("InventoryController: No ItemDictionary found in the scene!");
@@ -46,19 +44,14 @@ public class InventoryController : MonoBehaviour
     {
         if (inventoryPanel == null || slotPrefab == null) return;
 
-        // If slotCount not set, infer from existing children
         if (slotCount <= 0) slotCount = inventoryPanel.transform.childCount;
-
-        // If still 0, do nothing (user likely forgot to set slotCount)
         if (slotCount <= 0) return;
 
-        // Create missing slots
         while (inventoryPanel.transform.childCount < slotCount)
         {
             Instantiate(slotPrefab, inventoryPanel.transform);
         }
 
-        // Ensure each slot has a Slot component
         foreach (Transform slotTransform in inventoryPanel.transform)
         {
             if (slotTransform.GetComponent<Slot>() == null)
@@ -66,6 +59,10 @@ public class InventoryController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Adds 1 of the item. First tries to STACK into an existing slot with same ID.
+    /// If no stack found, places into an empty slot.
+    /// </summary>
     public bool AddItem(GameObject itemPrefab)
     {
         if (inventoryPanel == null)
@@ -82,7 +79,27 @@ public class InventoryController : MonoBehaviour
 
         EnsureSlotsExist();
 
-        // Look for empty slot
+        Item prefabItem = itemPrefab.GetComponent<Item>();
+        int prefabID = prefabItem != null ? prefabItem.ID : -1;
+
+        // 1) Try stack first
+        if (prefabID != -1)
+        {
+            foreach (Transform slotTransform in inventoryPanel.transform)
+            {
+                Slot slot = slotTransform.GetComponent<Slot>();
+                if (slot == null || slot.currentItem == null) continue;
+
+                Item existing = slot.currentItem.GetComponent<Item>();
+                if (existing != null && existing.ID == prefabID)
+                {
+                    existing.AddToStack(1);
+                    return true;
+                }
+            }
+        }
+
+        // 2) Otherwise put into empty slot
         foreach (Transform slotTransform in inventoryPanel.transform)
         {
             Slot slot = slotTransform.GetComponent<Slot>();
@@ -90,10 +107,18 @@ public class InventoryController : MonoBehaviour
             {
                 GameObject newItem = Instantiate(itemPrefab, slotTransform);
 
-                // UI placement
                 RectTransform rt = newItem.GetComponent<RectTransform>();
                 if (rt != null) rt.anchoredPosition = Vector2.zero;
                 newItem.transform.localPosition = Vector3.zero;
+                newItem.transform.localScale = Vector3.one;
+
+                // Ensure quantity display is correct
+                Item newItemComp = newItem.GetComponent<Item>();
+                if (newItemComp != null)
+                {
+                    newItemComp.quantity = Mathf.Max(1, newItemComp.quantity);
+                    newItemComp.UpdateQuantityDisplay();
+                }
 
                 slot.currentItem = newItem;
                 return true;
@@ -104,10 +129,59 @@ public class InventoryController : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Merges duplicate items by ID into the earliest slot, sums quantities, and updates quantity text.
+    /// </summary>
+    public void RebuildItemCounts()
+    {
+        if (inventoryPanel == null) return;
+
+        EnsureSlotsExist();
+
+        // Map itemID -> first slot holding it
+        Dictionary<int, Slot> firstSlotById = new Dictionary<int, Slot>();
+
+        foreach (Transform slotTransform in inventoryPanel.transform)
+        {
+            Slot slot = slotTransform.GetComponent<Slot>();
+            if (slot == null || slot.currentItem == null) continue;
+
+            Item item = slot.currentItem.GetComponent<Item>();
+            if (item == null) continue;
+
+            int id = item.ID;
+
+            if (!firstSlotById.ContainsKey(id))
+            {
+                firstSlotById[id] = slot;
+                item.UpdateQuantityDisplay();
+                continue;
+            }
+
+            // Merge into first slot
+            Slot firstSlot = firstSlotById[id];
+            Item firstItem = firstSlot.currentItem != null ? firstSlot.currentItem.GetComponent<Item>() : null;
+
+            if (firstItem == null)
+            {
+                // If something went wrong, just treat this as the "first"
+                firstSlotById[id] = slot;
+                item.UpdateQuantityDisplay();
+                continue;
+            }
+
+            int addQty = Mathf.Max(1, item.quantity);
+            firstItem.quantity += addQty;
+            firstItem.UpdateQuantityDisplay();
+
+            Destroy(slot.currentItem);
+            slot.currentItem = null;
+        }
+    }
+
     public List<InventorySaveData> GetInventoryItems()
     {
         var invData = new List<InventorySaveData>();
-
         if (inventoryPanel == null) return invData;
 
         foreach (Transform slotTransform in inventoryPanel.transform)
@@ -171,8 +245,15 @@ public class InventoryController : MonoBehaviour
             RectTransform rt = itemObj.GetComponent<RectTransform>();
             if (rt != null) rt.anchoredPosition = Vector2.zero;
             itemObj.transform.localPosition = Vector3.zero;
+            itemObj.transform.localScale = Vector3.one;
 
             slot.currentItem = itemObj;
+
+            var item = itemObj.GetComponent<Item>();
+            if (item != null) item.UpdateQuantityDisplay();
         }
+
+        // Optional: merge duplicates after loading
+        RebuildItemCounts();
     }
 }
