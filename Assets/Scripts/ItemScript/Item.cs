@@ -15,7 +15,7 @@ public class Item : MonoBehaviour
 
     public int buyPrice = 10;
     [Range(0, 1)]
-    public float sellPriceMultiplier = 0.5f;
+    public float sellPriceMultiplier =0.5f;
 
     private void Awake()
     {
