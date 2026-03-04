@@ -102,11 +102,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7832409929559836822, guid: fb64f017b974d84498047383ef4ac09d, type: 3}
       propertyPath: ID
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7832409929559836822, guid: fb64f017b974d84498047383ef4ac09d, type: 3}
       propertyPath: Name
       value: Potato
+      objectReference: {fileID: 0}
+    - target: {fileID: 7832409929559836822, guid: fb64f017b974d84498047383ef4ac09d, type: 3}
+      propertyPath: buyPrice
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7832409929559836822, guid: fb64f017b974d84498047383ef4ac09d, type: 3}
       propertyPath: sellPriceMultiplier

@@ -116,11 +116,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd33819998276434ba7ab5a13dd1dd5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ID: 2
+  ID: 1
   Name: Carrot seed
   quantity: 1
+  quantityText: {fileID: 0}
   buyPrice: 10
-  sellPriceMultiplier: 0.5
+  sellPriceMultiplier: 1
 --- !u!212 &-7241540913102276696
 SpriteRenderer:
   m_ObjectHideFlags: 0
