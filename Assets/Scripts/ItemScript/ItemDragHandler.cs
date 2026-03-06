@@ -1,73 +1,99 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
-    Transform originalParent;
-    CanvasGroup canvasGroup;
+    private Transform originalParent;
+    private CanvasGroup canvasGroup;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        originalParent = transform.parent; //Save OG parent
-        transform.SetParent(transform.root); //Above other canvas'
+        originalParent = transform.parent; // Save original parent
+        transform.SetParent(transform.root); // Move above other UI
         canvasGroup.blocksRaycasts = false;
-        canvasGroup.alpha = 0.6f; //Semi-transparent during drag
+        canvasGroup.alpha = 0.6f;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = eventData.position; //Follow the mouse
+        transform.position = eventData.position; // Follow mouse
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        canvasGroup.blocksRaycasts = true; //Enables raycasts
-        canvasGroup.alpha = 1f; //No longer transparent
+        canvasGroup.blocksRaycasts = true;
+        canvasGroup.alpha = 1f;
 
-        Slot dropSlot = eventData.pointerEnter?.GetComponent<Slot>(); //Slot where item dropped
-        if(dropSlot == null)
+        Slot dropSlot = eventData.pointerEnter?.GetComponent<Slot>();
+        if (dropSlot == null)
         {
-            GameObject dropItem = eventData.pointerEnter;
-            if (dropItem != null)
-            {
-                dropSlot = dropItem.GetComponentInParent<Slot>();
-            }
+            GameObject dropObject = eventData.pointerEnter;
+            if (dropObject != null)
+                dropSlot = dropObject.GetComponentInParent<Slot>();
         }
-        Slot originalSlot = originalParent.GetComponent<Slot>();
 
-        if(dropSlot != null)
+        Slot originalSlot = originalParent != null ? originalParent.GetComponent<Slot>() : null;
+
+        if (dropSlot != null)
         {
-            //Is a slot under drop point
             if (dropSlot.currentItem != null)
             {
-                //Slot has an item - swap items
+                // Swap items
                 dropSlot.currentItem.transform.SetParent(originalSlot.transform);
                 originalSlot.currentItem = dropSlot.currentItem;
                 dropSlot.currentItem.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
             }
             else
             {
-                originalSlot.currentItem = null;
+                if (originalSlot != null)
+                    originalSlot.currentItem = null;
             }
 
-            //Move item into drop slot
+            // Move dragged item into new slot
             transform.SetParent(dropSlot.transform);
             dropSlot.currentItem = gameObject;
+
+            TrySelectHotbarSlot(dropSlot);
         }
         else
         {
-            //No slot under drop point
+            // Return to original slot
             transform.SetParent(originalParent);
+            TrySelectHotbarSlot(originalSlot);
         }
 
-        GetComponent<RectTransform>().anchoredPosition = Vector2.zero; //Center
+        GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        Slot parentSlot = GetComponentInParent<Slot>();
+        TrySelectHotbarSlot(parentSlot);
+    }
+
+    private void TrySelectHotbarSlot(Slot slot)
+    {
+        if (slot == null || slot.isShopSlot)
+            return;
+
+        HotbarController hotbar = slot.GetComponentInParent<HotbarController>();
+        if (hotbar == null || hotbar.hotbarPanel == null)
+            return;
+
+        // Only select if this slot is directly under the hotbar panel
+        if (slot.transform.parent != hotbar.hotbarPanel.transform)
+            return;
+
+        hotbar.SelectSlotByIndex(slot.transform.GetSiblingIndex());
     }
 }
