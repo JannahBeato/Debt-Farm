@@ -17,7 +17,6 @@ public class PlayerMovement : MonoBehaviour
     private Animator _animator;
     private BoxCollider2D _collider;
 
-    // ✅ Other scripts can read this (tools, interaction, etc.)
     public Vector2 LastMotionVector { get; private set; } = Vector2.down;
 
     private const string _horizontal = "Horizontal";
@@ -40,7 +39,6 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetFloat(_horizontal, _movement.x);
         _animator.SetFloat(_vertical, _movement.y);
 
-        // ✅ Update last facing direction for both animator + tools
         if (_movement != Vector2.zero)
         {
             LastMotionVector = _movement;
@@ -51,14 +49,11 @@ public class PlayerMovement : MonoBehaviour
 
         if (InputManager.InteractPressed)
         {
-            // Try the tile you're on
             Vector3Int cell = _tileManager.WorldToCell(transform.position);
 
-            // Harvest FIRST (if ready), then stop so no other action happens
             if (_cropManager != null && _cropManager.TryHarvest(cell))
                 return;
 
-            // Your existing tile interaction logic
             if (_tileManager.IsInteractable(cell))
             {
                 Debug.Log("Interacted with tile at " + cell);
@@ -112,7 +107,6 @@ public class PlayerMovement : MonoBehaviour
         return hit.collider != null;
     }
 
-    
     public void SetCanMove(bool canMove)
     {
         _canMove = canMove;
@@ -120,5 +114,4 @@ public class PlayerMovement : MonoBehaviour
         if (!canMove)
             _movement = Vector2.zero;
     }
-
 }
