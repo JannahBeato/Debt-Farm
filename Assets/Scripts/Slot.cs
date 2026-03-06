@@ -6,6 +6,15 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     public GameObject currentItem;
     public bool isShopSlot;
 
+    public bool IsEmpty => currentItem == null;
+
+    public Item CurrentItemData => currentItem != null ? currentItem.GetComponent<Item>() : null;
+
+    public void ClearSlot()
+    {
+        currentItem = null;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left)
@@ -18,7 +27,6 @@ public class Slot : MonoBehaviour, IPointerClickHandler
         if (hotbar == null || hotbar.hotbarPanel == null)
             return;
 
-        // Only select if this slot is actually inside the hotbar panel
         if (transform.parent != hotbar.hotbarPanel.transform)
             return;
 

@@ -59,10 +59,6 @@ public class InventoryController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Adds 1 of the item. First tries to STACK into an existing slot with same ID.
-    /// If no stack found, places into an empty slot.
-    /// </summary>
     public bool AddItem(GameObject itemPrefab)
     {
         if (inventoryPanel == null)
@@ -80,26 +76,28 @@ public class InventoryController : MonoBehaviour
         EnsureSlotsExist();
 
         Item prefabItem = itemPrefab.GetComponent<Item>();
-        int prefabID = prefabItem != null ? prefabItem.ID : -1;
-
-        // 1) Try stack first
-        if (prefabID != -1)
+        if (prefabItem == null)
         {
-            foreach (Transform slotTransform in inventoryPanel.transform)
-            {
-                Slot slot = slotTransform.GetComponent<Slot>();
-                if (slot == null || slot.currentItem == null) continue;
+            Debug.LogWarning("InventoryController.AddItem: prefab has no Item component.");
+            return false;
+        }
 
-                Item existing = slot.currentItem.GetComponent<Item>();
-                if (existing != null && existing.ID == prefabID)
-                {
-                    existing.AddToStack(1);
-                    return true;
-                }
+        int prefabID = prefabItem.ID;
+        int amountToAdd = Mathf.Max(1, prefabItem.quantity);
+
+        foreach (Transform slotTransform in inventoryPanel.transform)
+        {
+            Slot slot = slotTransform.GetComponent<Slot>();
+            if (slot == null || slot.currentItem == null) continue;
+
+            Item existing = slot.currentItem.GetComponent<Item>();
+            if (existing != null && existing.ID == prefabID)
+            {
+                existing.AddToStack(amountToAdd);
+                return true;
             }
         }
 
-        // 2) Otherwise put into empty slot
         foreach (Transform slotTransform in inventoryPanel.transform)
         {
             Slot slot = slotTransform.GetComponent<Slot>();
@@ -112,11 +110,10 @@ public class InventoryController : MonoBehaviour
                 newItem.transform.localPosition = Vector3.zero;
                 newItem.transform.localScale = Vector3.one;
 
-                // Ensure quantity display is correct
                 Item newItemComp = newItem.GetComponent<Item>();
                 if (newItemComp != null)
                 {
-                    newItemComp.quantity = Mathf.Max(1, newItemComp.quantity);
+                    newItemComp.quantity = amountToAdd;
                     newItemComp.UpdateQuantityDisplay();
                 }
 
@@ -129,16 +126,11 @@ public class InventoryController : MonoBehaviour
         return false;
     }
 
-    /// <summary>
-    /// Merges duplicate items by ID into the earliest slot, sums quantities, and updates quantity text.
-    /// </summary>
     public void RebuildItemCounts()
     {
         if (inventoryPanel == null) return;
 
         EnsureSlotsExist();
-
-        // Map itemID -> first slot holding it
         Dictionary<int, Slot> firstSlotById = new Dictionary<int, Slot>();
 
         foreach (Transform slotTransform in inventoryPanel.transform)
@@ -158,13 +150,11 @@ public class InventoryController : MonoBehaviour
                 continue;
             }
 
-            // Merge into first slot
             Slot firstSlot = firstSlotById[id];
             Item firstItem = firstSlot.currentItem != null ? firstSlot.currentItem.GetComponent<Item>() : null;
 
             if (firstItem == null)
             {
-                // If something went wrong, just treat this as the "first"
                 firstSlotById[id] = slot;
                 item.UpdateQuantityDisplay();
                 continue;
@@ -195,7 +185,8 @@ public class InventoryController : MonoBehaviour
             invData.Add(new InventorySaveData
             {
                 itemID = item.ID,
-                slotIndex = slotTransform.GetSiblingIndex()
+                slotIndex = slotTransform.GetSiblingIndex(),
+                quantity = Mathf.Max(1, item.quantity)
             });
         }
 
@@ -213,7 +204,6 @@ public class InventoryController : MonoBehaviour
 
         EnsureSlotsExist();
 
-        // Clear items only (keep slots)
         for (int i = 0; i < inventoryPanel.transform.childCount; i++)
         {
             var slot = inventoryPanel.transform.GetChild(i).GetComponent<Slot>();
@@ -223,7 +213,6 @@ public class InventoryController : MonoBehaviour
             slot.currentItem = null;
         }
 
-        // Populate
         for (int i = 0; i < saveData.Count; i++)
         {
             var data = saveData[i];
@@ -250,10 +239,13 @@ public class InventoryController : MonoBehaviour
             slot.currentItem = itemObj;
 
             var item = itemObj.GetComponent<Item>();
-            if (item != null) item.UpdateQuantityDisplay();
+            if (item != null)
+            {
+                item.quantity = Mathf.Max(1, data.quantity);
+                item.UpdateQuantityDisplay();
+            }
         }
 
-        // Optional: merge duplicates after loading
         RebuildItemCounts();
     }
 

@@ -1,34 +1,27 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerItemCollector : MonoBehaviour
 {
     private InventoryController inventoryController;
     public static System.Action<Item> OnItemCollected;
-    // Start is called before the first frame update
-    void Start()
+
+    private void Start()
     {
         inventoryController = FindObjectOfType<InventoryController>();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Item"))
-        {
-            Item item = collision.GetComponent<Item>();
-            if (item != null)
-            {
-                //Add item inventory
-                bool itemAdded = inventoryController.AddItem(collision.gameObject);
+        if (!collision.CompareTag("Item")) return;
 
-                if (itemAdded)
-                {
-                    OnItemCollected?.Invoke(item);
-                    item.PickUp();
-                    Destroy(collision.gameObject);
-                }
-            }
-        }
+        Item item = collision.GetComponent<Item>();
+        if (item == null) return;
+
+        bool itemAdded = inventoryController != null && inventoryController.AddItem(collision.gameObject);
+        if (!itemAdded) return;
+
+        OnItemCollected?.Invoke(item);
+        item.PickUp();
+        Destroy(collision.gameObject);
     }
 }

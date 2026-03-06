@@ -15,15 +15,15 @@ public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        originalParent = transform.parent; // Save original parent
-        transform.SetParent(transform.root); // Move above other UI
+        originalParent = transform.parent;
+        transform.SetParent(transform.root);
         canvasGroup.blocksRaycasts = false;
         canvasGroup.alpha = 0.6f;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = eventData.position; // Follow mouse
+        transform.position = eventData.position;
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -41,35 +41,55 @@ public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
         Slot originalSlot = originalParent != null ? originalParent.GetComponent<Slot>() : null;
 
-        if (dropSlot != null)
+        if (dropSlot == null || originalSlot == null)
         {
-            if (dropSlot.currentItem != null)
-            {
-                // Swap items
-                dropSlot.currentItem.transform.SetParent(originalSlot.transform);
-                originalSlot.currentItem = dropSlot.currentItem;
-                dropSlot.currentItem.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-            }
-            else
-            {
-                if (originalSlot != null)
-                    originalSlot.currentItem = null;
-            }
+            ReturnToOriginalSlot(originalSlot);
+            return;
+        }
 
-            // Move dragged item into new slot
-            transform.SetParent(dropSlot.transform);
-            dropSlot.currentItem = gameObject;
+        if (dropSlot == originalSlot)
+        {
+            ReturnToOriginalSlot(originalSlot);
+            return;
+        }
+
+        Item draggedItem = GetComponent<Item>();
+        Item dropItem = dropSlot.currentItem != null ? dropSlot.currentItem.GetComponent<Item>() : null;
+
+        if (draggedItem != null && dropItem != null && draggedItem.ID == dropItem.ID)
+        {
+            dropItem.AddToStack(Mathf.Max(1, draggedItem.quantity));
+
+            originalSlot.currentItem = null;
+            Destroy(gameObject);
 
             TrySelectHotbarSlot(dropSlot);
+            return;
+        }
+
+        if (dropSlot.currentItem != null)
+        {
+            dropSlot.currentItem.transform.SetParent(originalSlot.transform);
+            dropSlot.currentItem.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            originalSlot.currentItem = dropSlot.currentItem;
         }
         else
         {
-            // Return to original slot
-            transform.SetParent(originalParent);
-            TrySelectHotbarSlot(originalSlot);
+            originalSlot.currentItem = null;
         }
 
+        transform.SetParent(dropSlot.transform);
         GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        dropSlot.currentItem = gameObject;
+
+        TrySelectHotbarSlot(dropSlot);
+    }
+
+    private void ReturnToOriginalSlot(Slot originalSlot)
+    {
+        transform.SetParent(originalParent);
+        GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        TrySelectHotbarSlot(originalSlot);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -90,7 +110,6 @@ public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         if (hotbar == null || hotbar.hotbarPanel == null)
             return;
 
-        // Only select if this slot is directly under the hotbar panel
         if (slot.transform.parent != hotbar.hotbarPanel.transform)
             return;
 

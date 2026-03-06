@@ -34,6 +34,8 @@ public class HotbarController : MonoBehaviour
 
     private void Start()
     {
+        EnsureSlotsExist();
+
         if (hotbarPanel != null && hotbarPanel.transform.childCount > 0)
             SelectSlotByIndex(selectedIndex);
     }
@@ -42,12 +44,28 @@ public class HotbarController : MonoBehaviour
     {
         if (hotbarPanel == null) return;
 
-        for (int i = 0; i < slotCount; i++)
+        for (int i = 0; i < Mathf.Min(slotCount, hotbarKeys.Length); i++)
         {
             if (Keyboard.current != null && Keyboard.current[hotbarKeys[i]].wasPressedThisFrame)
             {
                 SelectSlotByIndex(i);
             }
+        }
+    }
+
+    private void EnsureSlotsExist()
+    {
+        if (hotbarPanel == null || slotPrefab == null) return;
+
+        while (hotbarPanel.transform.childCount < slotCount)
+        {
+            Instantiate(slotPrefab, hotbarPanel.transform);
+        }
+
+        foreach (Transform slotTransform in hotbarPanel.transform)
+        {
+            if (slotTransform.GetComponent<Slot>() == null)
+                slotTransform.gameObject.AddComponent<Slot>();
         }
     }
 
@@ -103,18 +121,17 @@ public class HotbarController : MonoBehaviour
         foreach (Transform slotTransform in hotbarPanel.transform)
         {
             Slot slot = slotTransform.GetComponent<Slot>();
-            if (slot != null && slot.currentItem != null)
+            if (slot == null || slot.currentItem == null) continue;
+
+            Item item = slot.currentItem.GetComponent<Item>();
+            if (item == null) continue;
+
+            hotbarData.Add(new InventorySaveData
             {
-                Item item = slot.currentItem.GetComponent<Item>();
-                if (item != null)
-                {
-                    hotbarData.Add(new InventorySaveData
-                    {
-                        itemID = item.ID,
-                        slotIndex = slotTransform.GetSiblingIndex()
-                    });
-                }
-            }
+                itemID = item.ID,
+                slotIndex = slotTransform.GetSiblingIndex(),
+                quantity = Mathf.Max(1, item.quantity)
+            });
         }
 
         return hotbarData;
@@ -124,11 +141,9 @@ public class HotbarController : MonoBehaviour
     {
         if (hotbarPanel == null) return;
         if (saveData == null) saveData = new List<InventorySaveData>();
+        if (itemDictionary == null) itemDictionary = FindObjectOfType<ItemDictionary>();
 
-        while (hotbarPanel.transform.childCount < slotCount)
-        {
-            Instantiate(slotPrefab, hotbarPanel.transform);
-        }
+        EnsureSlotsExist();
 
         for (int i = 0; i < hotbarPanel.transform.childCount; i++)
         {
@@ -150,9 +165,21 @@ public class HotbarController : MonoBehaviour
             GameObject itemPrefab = itemDictionary.GetItemPrefab(data.itemID);
             if (itemPrefab == null) continue;
 
-            GameObject item = Instantiate(itemPrefab, slot.transform);
-            item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-            slot.currentItem = item;
+            GameObject itemObj = Instantiate(itemPrefab, slot.transform);
+
+            RectTransform rt = itemObj.GetComponent<RectTransform>();
+            if (rt != null) rt.anchoredPosition = Vector2.zero;
+            itemObj.transform.localPosition = Vector3.zero;
+            itemObj.transform.localScale = Vector3.one;
+
+            Item item = itemObj.GetComponent<Item>();
+            if (item != null)
+            {
+                item.quantity = Mathf.Max(1, data.quantity);
+                item.UpdateQuantityDisplay();
+            }
+
+            slot.currentItem = itemObj;
         }
 
         SelectSlotByIndex(selectedIndex);
@@ -186,6 +213,21 @@ public class HotbarController : MonoBehaviour
 
         Slot slot = hotbarPanel.transform.GetChild(selectedIndex).GetComponent<Slot>();
         if (slot == null || slot.currentItem == null) return false;
+
+        Item item = slot.currentItem.GetComponent<Item>();
+        if (item == null)
+        {
+            Destroy(slot.currentItem);
+            slot.currentItem = null;
+            return true;
+        }
+
+        if (item.quantity > 1)
+        {
+            item.quantity -= 1;
+            item.UpdateQuantityDisplay();
+            return true;
+        }
 
         Destroy(slot.currentItem);
         slot.currentItem = null;

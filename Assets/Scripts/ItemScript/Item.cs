@@ -15,16 +15,16 @@ public class Item : MonoBehaviour
 
     public int buyPrice = 10;
     [Range(0, 1)]
-    public float sellPriceMultiplier =1f;
+    public float sellPriceMultiplier = 1f;
 
     private void Awake()
     {
         CacheQuantityText();
 
-       
         if (quantityText == null)
             TryAutoCreateQuantityText();
 
+        quantity = Mathf.Max(1, quantity);
         UpdateQuantityDisplay();
     }
 
@@ -32,7 +32,6 @@ public class Item : MonoBehaviour
     {
         if (quantityText != null) return;
 
-        // Prefer a known child name if you have one in some prefabs
         Transform t =
             transform.Find("QuantityText") ??
             transform.Find("QtyText") ??
@@ -42,7 +41,6 @@ public class Item : MonoBehaviour
         if (t != null)
             quantityText = t.GetComponent<TMP_Text>();
 
-        // Otherwise try to find any TMP child whose name suggests quantity
         if (quantityText == null)
         {
             foreach (var txt in GetComponentsInChildren<TMP_Text>(true))
@@ -60,7 +58,6 @@ public class Item : MonoBehaviour
 
     private void TryAutoCreateQuantityText()
     {
-        // Only auto-create for UI items
         if (GetComponent<RectTransform>() == null) return;
 
         var go = new GameObject("QuantityText", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -70,7 +67,7 @@ public class Item : MonoBehaviour
         rt.anchorMin = new Vector2(1f, 1f);
         rt.anchorMax = new Vector2(1f, 1f);
         rt.pivot = new Vector2(1f, 1f);
-        rt.anchoredPosition = new Vector2(-6f, -6f);   // top-right inset
+        rt.anchoredPosition = new Vector2(-6f, -6f);
         rt.sizeDelta = new Vector2(64f, 32f);
 
         var tmp = go.GetComponent<TextMeshProUGUI>();
@@ -91,10 +88,7 @@ public class Item : MonoBehaviour
         if (!quantityText.gameObject.activeSelf)
             quantityText.gameObject.SetActive(true);
 
-        // show only when > 1 (same behavior as your desired UI)
         quantityText.text = quantity > 1 ? quantity.ToString() : "";
-
-        // keep it drawn over the icon
         quantityText.transform.SetAsLastSibling();
     }
 
@@ -109,6 +103,15 @@ public class Item : MonoBehaviour
         quantity -= Mathf.Max(1, amount);
         if (quantity < 1) quantity = 1;
         UpdateQuantityDisplay();
+    }
+
+    // Returns true when the stack is now empty and should be destroyed.
+    public bool ConsumeFromStack(int amount = 1)
+    {
+        quantity -= Mathf.Max(1, amount);
+        if (quantity < 0) quantity = 0;
+        UpdateQuantityDisplay();
+        return quantity <= 0;
     }
 
     public virtual void UseItem()
