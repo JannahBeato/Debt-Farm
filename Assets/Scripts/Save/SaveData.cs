@@ -9,6 +9,7 @@ public class SaveData
     public List<InventorySaveData> inventorySaveData;
     public List<InventorySaveData> hotbarSaveData;
     public List<TileStateSaveData> modifiedTiles;
+    public List<CropSaveData> crops;
 
     // TIME
     public int date;
@@ -43,4 +44,17 @@ public class JournalEntrySaveData
 
     public bool isObjective;
     public bool completed;
+}
+
+
+[System.Serializable]
+public class CropSaveData
+{
+    public int x;
+    public int y;
+    public int z;
+
+    public string cropDefinitionName;
+    public int stage;
+    public bool wateredToday;
 }

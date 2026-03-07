@@ -16,6 +16,7 @@ public class SaveController : MonoBehaviour
     private PlayerEnergy playerEnergy;
     private CurrencyController currencyController;
     private ObjectiveManager objectiveManager;
+    private CropManager cropManager;
 
     // DIARY
     private bool hasSeenIntroLetter;
@@ -44,6 +45,7 @@ public class SaveController : MonoBehaviour
         if (playerEnergy == null) playerEnergy = FindObjectOfType<PlayerEnergy>();
         if (currencyController == null) currencyController = FindObjectOfType<CurrencyController>();
         if (objectiveManager == null) objectiveManager = FindObjectOfType<ObjectiveManager>();
+        if (cropManager == null) cropManager = FindObjectOfType<CropManager>();
 
         if (journalManager == null) journalManager = FindObjectOfType<JournalManager>();
         if (introLetterController == null) introLetterController = FindObjectOfType<IntroLetterController>();
@@ -80,6 +82,7 @@ public class SaveController : MonoBehaviour
             currentGold = currencyController != null ? currencyController.CurrentGold : 0,
             gameEnded = objectiveManager != null && objectiveManager.GameEnded,
             playerWon = objectiveManager != null && objectiveManager.PlayerWon,
+            crops = cropManager != null ? cropManager.GetSavedCrops() : null,
 
             hasSeenIntroLetter = hasSeenIntroLetter,
             journalEntries = journalManager != null ? journalManager.Export() : null
@@ -110,6 +113,7 @@ public class SaveController : MonoBehaviour
 
             if (objectiveManager != null)
                 objectiveManager.LoadState(false, false);
+
 
             SaveGame();
 
@@ -156,6 +160,9 @@ public class SaveController : MonoBehaviour
 
         if (tileManager != null && saveData.modifiedTiles != null)
             tileManager.LoadModifiedTiles(saveData.modifiedTiles);
+
+        if (cropManager != null)
+            cropManager.LoadSavedCrops(saveData.crops);
 
         if (playerEnergy != null)
         {
