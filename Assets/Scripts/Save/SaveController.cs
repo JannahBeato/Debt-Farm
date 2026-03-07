@@ -14,6 +14,8 @@ public class SaveController : MonoBehaviour
     private CinemachineConfiner2D confiner;
     private Transform player;
     private PlayerEnergy playerEnergy;
+    private CurrencyController currencyController;
+    private ObjectiveManager objectiveManager;
 
     // DIARY
     private bool hasSeenIntroLetter;
@@ -28,7 +30,7 @@ public class SaveController : MonoBehaviour
 
     private IEnumerator Start()
     {
-        yield return null; // wait 1 frame
+        yield return null;
         LoadGame();
     }
 
@@ -40,6 +42,8 @@ public class SaveController : MonoBehaviour
         if (tileManager == null) tileManager = FindObjectOfType<TileManager>();
         if (confiner == null) confiner = FindObjectOfType<CinemachineConfiner2D>();
         if (playerEnergy == null) playerEnergy = FindObjectOfType<PlayerEnergy>();
+        if (currencyController == null) currencyController = FindObjectOfType<CurrencyController>();
+        if (objectiveManager == null) objectiveManager = FindObjectOfType<ObjectiveManager>();
 
         if (journalManager == null) journalManager = FindObjectOfType<JournalManager>();
         if (introLetterController == null) introLetterController = FindObjectOfType<IntroLetterController>();
@@ -73,7 +77,10 @@ public class SaveController : MonoBehaviour
             currentEnergy = playerEnergy != null ? playerEnergy.CurrentEnergy : 0,
             maxEnergy = playerEnergy != null ? playerEnergy.MaxEnergy : 0,
 
-            // DIARY
+            currentGold = currencyController != null ? currencyController.CurrentGold : 0,
+            gameEnded = objectiveManager != null && objectiveManager.GameEnded,
+            playerWon = objectiveManager != null && objectiveManager.PlayerWon,
+
             hasSeenIntroLetter = hasSeenIntroLetter,
             journalEntries = journalManager != null ? journalManager.Export() : null
         };
@@ -85,13 +92,24 @@ public class SaveController : MonoBehaviour
     {
         CacheRefs();
 
-        // NEW GAME (no save yet)
         if (!File.Exists(saveLocation))
         {
             hasSeenIntroLetter = false;
 
             if (journalManager != null)
                 journalManager.Import(null);
+
+            if (timeManager != null)
+                timeManager.InitializeTime(1, 7, 0);
+
+            if (playerEnergy != null)
+                playerEnergy.RestoreToFull();
+
+            if (currencyController != null)
+                currencyController.ResetToStartingGold();
+
+            if (objectiveManager != null)
+                objectiveManager.LoadState(false, false);
 
             SaveGame();
 
@@ -101,12 +119,14 @@ public class SaveController : MonoBehaviour
             return;
         }
 
-        SaveData saveData = JsonUtility.FromJson<SaveData>(File.ReadAllText(saveLocation));
+        string rawJson = File.ReadAllText(saveLocation);
+        SaveData saveData = JsonUtility.FromJson<SaveData>(rawJson);
+
+        bool hasCurrentGoldField = rawJson.Contains("\"currentGold\"");
 
         if (player != null)
             player.position = saveData.playerPosition;
 
-        // Confiner boundary
         if (confiner != null && !string.IsNullOrEmpty(saveData.mapBoundary))
         {
             var boundaryGO = GameObject.Find(saveData.mapBoundary);
@@ -145,13 +165,20 @@ public class SaveController : MonoBehaviour
                 playerEnergy.RestoreToFull();
         }
 
-        // DIARY LOAD
+        if (currencyController != null)
+        {
+            int loadedGold = hasCurrentGoldField ? saveData.currentGold : currencyController.StartingGold;
+            currencyController.SetGold(loadedGold);
+        }
+
         hasSeenIntroLetter = saveData.hasSeenIntroLetter;
 
         if (journalManager != null)
             journalManager.Import(saveData.journalEntries);
 
-        // If not seen yet, show letter
+        if (objectiveManager != null)
+            objectiveManager.LoadState(saveData.gameEnded, saveData.playerWon);
+
         if (!hasSeenIntroLetter && introLetterController != null)
             introLetterController.Show();
     }

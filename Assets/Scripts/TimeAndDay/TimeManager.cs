@@ -17,30 +17,29 @@ public class TimeManager : MonoBehaviour
     private float secondsPerGameMinute;
     private float timer;
 
-    // Old event name (typo) - your ClockManager currently uses this.
     public static UnityAction<DateTime> OnDateimeChanged;
-
-    // New/Correct event name - other scripts might use this.
     public static UnityAction<DateTime> OnDateTimeChanged;
 
-    // Minutes since midnight (0..1439)
     public static int CurrentMinutesOfDay { get; private set; }
 
     public const int MinutesInDay = 1440;
+    public const int MidnightMinutes = 0;
+    public const int OneAMMinutes = 60;
+    public const int PassOutMinutes = 120;
+    public const int NewDayStartMinutes = 420;
 
-    // Keep these constants (useful for DayCycleController comparisons)
-    public const int MidnightMinutes = 0;        // 00:00
-    public const int OneAMMinutes = 60;          // 01:00
-    public const int PassOutMinutes = 120;       // 02:00
-    public const int NewDayStartMinutes = 420;   // 07:00
+    private void Reset()
+    {
+        dateInMonth = 1;
+        hour = 7;
+        minutes = 0;
+        realSecondsPerGameDay = 15f;
+    }
 
     private void Awake()
     {
         secondsPerGameMinute = realSecondsPerGameDay / MinutesInDay;
-
-        // IMPORTANT: initialize totals properly
         _dateTime = new DateTime(dateInMonth, hour, minutes);
-
         CurrentMinutesOfDay = _dateTime.GetMinutesOfDay();
     }
 
@@ -69,6 +68,7 @@ public class TimeManager : MonoBehaviour
     {
         _dateTime = new DateTime(startDate, startHour, startMinutes);
         CurrentMinutesOfDay = _dateTime.GetMinutesOfDay();
+        timer = 0f;
         InvokeDateTimeChanged();
     }
 
@@ -79,34 +79,33 @@ public class TimeManager : MonoBehaviour
         _dateTime.SetTotals(totalNumDays, totalNumWeeks);
 
         CurrentMinutesOfDay = _dateTime.GetMinutesOfDay();
+        timer = 0f;
         InvokeDateTimeChanged();
     }
 
-    // Backwards compatible “sleep”
     public void Sleep()
     {
         StartNewDayAt(7, 0);
     }
 
-    // Helper for sleep/pass-out systems (called by EndOfDayService / Sleep logic)
     public void StartNewDayAt(int startHour, int startMinutes)
     {
         _dateTime.StartNewDayAt(startHour, startMinutes);
         CurrentMinutesOfDay = _dateTime.GetMinutesOfDay();
+        timer = 0f;
         InvokeDateTimeChanged();
     }
 
     private void InvokeDateTimeChanged()
     {
-        OnDateimeChanged?.Invoke(_dateTime);   // old typo name
-        OnDateTimeChanged?.Invoke(_dateTime);  // correct name
+        OnDateimeChanged?.Invoke(_dateTime);
+        OnDateTimeChanged?.Invoke(_dateTime);
     }
 }
 
 [System.Serializable]
 public class DateTime
 {
-    #region Fields
     private Days day;
     private int date;
     private int hour;
@@ -114,38 +113,28 @@ public class DateTime
 
     private int totalNumDays;
     private int totalNumWeeks;
-    #endregion
 
-    #region Properties
     public Days Day => day;
     public int Date => date;
     public int Hour => hour;
     public int Minutes => minutes;
-
     public int TotalNumDays => totalNumDays;
     public int TotalNumWeeks => totalNumWeeks;
-
     public int CurrentWeek => totalNumWeeks % 16 == 0 ? 16 : totalNumWeeks % 16;
-    #endregion
 
-    #region Constructor
     public DateTime(int date, int hour, int minutes)
     {
         this.date = date;
         this.hour = hour;
         this.minutes = minutes;
 
-        // FIX: total day/week should be consistent from the start.
-        // If your "date" is day-in-month starting at 1, then totalNumDays should start at 1 too.
         totalNumDays = Mathf.Max(1, date);
         totalNumWeeks = 1 + (totalNumDays - 1) / 7;
 
         day = (Days)(date % 7);
         if (day == 0) day = Days.Sunday;
     }
-    #endregion
 
-    #region Time Advancement
     public void AdvanceMinutes(int minutesToAdvance)
     {
         minutes += minutesToAdvance;
@@ -164,7 +153,6 @@ public class DateTime
         if (hour >= 24)
             hour = 0;
 
-        // Your design: new day happens at 07:00
         if (hour == 7)
             AdvanceDay();
     }
@@ -184,7 +172,6 @@ public class DateTime
             day++;
         }
     }
-    #endregion
 
     public int GetMinutesOfDay() => hour * 60 + minutes;
 
@@ -208,7 +195,6 @@ public class DateTime
         totalNumWeeks = totalWeeks;
     }
 
-    // Supports hour + minutes
     public void StartNewDayAt(int startHour, int startMinutes)
     {
         AdvanceDay();
@@ -216,7 +202,6 @@ public class DateTime
         minutes = Mathf.Clamp(startMinutes, 0, 59);
     }
 
-    // Backwards compatible
     public void StartNewDayAt(int startHour)
     {
         StartNewDayAt(startHour, 0);

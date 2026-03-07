@@ -1,7 +1,5 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-
 
 [System.Serializable]
 public class SaveData
@@ -23,6 +21,13 @@ public class SaveData
     public int currentEnergy;
     public int maxEnergy;
 
+    // GOLD
+    public int currentGold;
+
+    // GAME RESULT
+    public bool gameEnded;
+    public bool playerWon;
+
     // DIARY / TUTORIAL
     public bool hasSeenIntroLetter;
     public List<JournalEntrySaveData> journalEntries;
@@ -31,10 +36,10 @@ public class SaveData
 [System.Serializable]
 public class JournalEntrySaveData
 {
-    public string id;        // "intro-letter", "day1", etc.
-    public string title;     // "A Letter From..."
-    public string body;      // full text
-    public int dayAdded;     // optional (use your time system)
+    public string id;
+    public string title;
+    public string body;
+    public int dayAdded;
 
     public bool isObjective;
     public bool completed;

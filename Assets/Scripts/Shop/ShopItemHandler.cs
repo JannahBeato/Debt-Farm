@@ -58,14 +58,20 @@ public class ShopItemHandler : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        // Add to inventory (supports stacking)
+        // Add to inventory first (supports stacking)
         if (InventoryController.Instance.AddItem(itemPrefab))
         {
             CurrencyController.Instance.SpendGold(price);
 
+            // Mark objective if this was Axe/Hoe/Water Bucket
+            ObjectiveManager.Instance?.MarkShopPurchaseByItemID(itemID);
+
             // Remove 1 from shop and refresh UI
             ShopController.Instance.RemoveItemFromShop(itemID, 1);
             ShopController.Instance.RefreshPlayerInventoryDisplay();
+            ShopController.Instance.RefreshShopDisplay();
+
+            FindObjectOfType<SaveController>()?.SaveGame();
         }
         else
         {
@@ -117,5 +123,7 @@ public class ShopItemHandler : MonoBehaviour, IPointerClickHandler
         // Refresh shop UI panels
         ShopController.Instance.RefreshPlayerInventoryDisplay();
         ShopController.Instance.RefreshShopDisplay();
+
+        FindObjectOfType<SaveController>()?.SaveGame();
     }
 }

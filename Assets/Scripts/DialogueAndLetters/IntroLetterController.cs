@@ -82,8 +82,6 @@ public class IntroLetterController : MonoBehaviour
         if (_saveController != null)
             _saveController.MarkIntroLetterSeenAndSave();
 
-        ObjectiveManager.Instance?.EnsurePickupAxeObjective();
-
         // Added: reload saved game after closing the intro letter
         if (_saveController != null)
             _saveController.LoadGame();

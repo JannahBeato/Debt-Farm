@@ -134,4 +134,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65a50124a645ea348b1e82555828af2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  energyCost: 10
+  energyCost: 2
