@@ -31,15 +31,27 @@ public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
 
-        Slot dropSlot = eventData.pointerEnter?.GetComponent<Slot>();
-        if (dropSlot == null)
-        {
-            GameObject dropObject = eventData.pointerEnter;
-            if (dropObject != null)
-                dropSlot = dropObject.GetComponentInParent<Slot>();
-        }
+        GameObject dropObject = eventData.pointerEnter;
+
+        TrashSlot trashSlot = null;
+        if (dropObject != null)
+            trashSlot = dropObject.GetComponentInParent<TrashSlot>();
 
         Slot originalSlot = originalParent != null ? originalParent.GetComponent<Slot>() : null;
+
+        // DROPPED ON TRASH -> DELETE ITEM
+        if (trashSlot != null)
+        {
+            DeleteItem(originalSlot);
+            return;
+        }
+
+        Slot dropSlot = null;
+        if (dropObject != null)
+            dropSlot = dropObject.GetComponent<Slot>();
+
+        if (dropSlot == null && dropObject != null)
+            dropSlot = dropObject.GetComponentInParent<Slot>();
 
         if (dropSlot == null || originalSlot == null)
         {
@@ -56,6 +68,7 @@ public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         Item draggedItem = GetComponent<Item>();
         Item dropItem = dropSlot.currentItem != null ? dropSlot.currentItem.GetComponent<Item>() : null;
 
+        // STACK SAME ITEMS
         if (draggedItem != null && dropItem != null && draggedItem.ID == dropItem.ID)
         {
             dropItem.AddToStack(Mathf.Max(1, draggedItem.quantity));
@@ -67,6 +80,7 @@ public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
             return;
         }
 
+        // SWAP ITEMS
         if (dropSlot.currentItem != null)
         {
             dropSlot.currentItem.transform.SetParent(originalSlot.transform);
@@ -83,6 +97,16 @@ public class ItemDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         dropSlot.currentItem = gameObject;
 
         TrySelectHotbarSlot(dropSlot);
+    }
+
+    private void DeleteItem(Slot originalSlot)
+    {
+        if (originalSlot != null)
+            originalSlot.currentItem = null;
+
+        Destroy(gameObject);
+
+        TrySelectHotbarSlot(originalSlot);
     }
 
     private void ReturnToOriginalSlot(Slot originalSlot)

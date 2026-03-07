@@ -44,18 +44,32 @@ public class InventoryController : MonoBehaviour
     {
         if (inventoryPanel == null || slotPrefab == null) return;
 
-        if (slotCount <= 0) slotCount = inventoryPanel.transform.childCount;
-        if (slotCount <= 0) return;
+        int existingInventorySlots = 0;
 
-        while (inventoryPanel.transform.childCount < slotCount)
+        foreach (Transform child in inventoryPanel.transform)
         {
-            Instantiate(slotPrefab, inventoryPanel.transform);
+            if (child.GetComponent<TrashSlot>() != null)
+                continue;
+
+            existingInventorySlots++;
         }
 
-        foreach (Transform slotTransform in inventoryPanel.transform)
+        if (slotCount <= 0) slotCount = existingInventorySlots;
+        if (slotCount <= 0) return;
+
+        while (existingInventorySlots < slotCount)
         {
-            if (slotTransform.GetComponent<Slot>() == null)
-                slotTransform.gameObject.AddComponent<Slot>();
+            Instantiate(slotPrefab, inventoryPanel.transform);
+            existingInventorySlots++;
+        }
+
+        foreach (Transform child in inventoryPanel.transform)
+        {
+            if (child.GetComponent<TrashSlot>() != null)
+                continue;
+
+            if (child.GetComponent<Slot>() == null)
+                child.gameObject.AddComponent<Slot>();
         }
     }
 
