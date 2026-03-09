@@ -32,6 +32,9 @@ public class SaveData
     // DIARY / TUTORIAL
     public bool hasSeenIntroLetter;
     public List<JournalEntrySaveData> journalEntries;
+
+    // SHOP
+    public List<ShopSaveData> shops;
 }
 
 [System.Serializable]
@@ -57,4 +60,18 @@ public class CropSaveData
     public string cropDefinitionName;
     public int stage;
     public bool wateredToday;
+}
+
+[System.Serializable]
+public class ShopSaveData 
+{
+    public string shopID;
+    public List<ShopStockSaveData> stock = new List<ShopStockSaveData>();
+}
+
+[System.Serializable]
+public class ShopStockSaveData
+{
+    public int itemID;
+    public int quantity;
 }

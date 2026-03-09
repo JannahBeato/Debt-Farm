@@ -7,6 +7,7 @@ public class MainMenuController : MonoBehaviour
 {
     [Header("Scene Names")]
     [SerializeField] private string gameplaySceneName = "MainScene";
+    [SerializeField] private string mainMenuSceneName = "MainMenu";
 
     [Header("Optional")]
     [SerializeField] private Button loadGameButton;
@@ -33,6 +34,16 @@ public class MainMenuController : MonoBehaviour
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(gameplaySceneName);
+    }
+
+    public void ReturnToMainMenuAndResetGame()
+    {
+        Time.timeScale = 1f;
+
+        if (File.Exists(SavePath))
+            File.Delete(SavePath);
+
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 
     public void ExitGame()

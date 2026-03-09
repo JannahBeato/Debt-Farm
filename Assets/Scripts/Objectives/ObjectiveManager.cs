@@ -49,6 +49,12 @@ public class ObjectiveManager : MonoBehaviour
 
     private void Start()
     {
+        if (winPanel != null)
+            winPanel.SetActive(false);
+
+        if (losePanel != null)
+            losePanel.SetActive(false);
+
         RefreshObjectives();
     }
 
@@ -252,7 +258,11 @@ public class ObjectiveManager : MonoBehaviour
             losePanel.SetActive(gameEnded && !playerWon);
 
         if (gameEnded)
+        {
             Time.timeScale = 0f;
+            PauseController.SetPause(true);                
+        }
+            
     }
 
     private void UpdateDebtObjectiveEntry()

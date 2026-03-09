@@ -74,4 +74,46 @@ public class ShopNPC : MonoBehaviour, IInteractable
         }
         return false;
     }
+
+    public ShopSaveData GetSaveData()
+    {
+        InitializeShop();
+
+        ShopSaveData data = new ShopSaveData
+        {
+            shopID = shopID,
+            stock = new List<ShopStockSaveData>()
+        };
+
+        foreach (var item in currentShopStock)
+        {
+            data.stock.Add(new ShopStockSaveData
+            {
+                itemID = item.itemID,
+                quantity = item.quantity
+            });
+        }
+
+        return data;
+    }
+
+    public void LoadFromSaveData(ShopSaveData data)
+    {
+        InitializeShop();
+
+        if (data == null || data.stock == null) return;
+
+        currentShopStock = new List<ShopStockItem>();
+
+        foreach (var item in data.stock)
+        {
+            currentShopStock.Add(new ShopStockItem
+            {
+                itemID = item.itemID,
+                quantity = item.quantity
+            });
+        }
+
+        isInitialized = true;
+    }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using Unity.Cinemachine;
 
@@ -85,7 +86,9 @@ public class SaveController : MonoBehaviour
             crops = cropManager != null ? cropManager.GetSavedCrops() : null,
 
             hasSeenIntroLetter = hasSeenIntroLetter,
-            journalEntries = journalManager != null ? journalManager.Export() : null
+            journalEntries = journalManager != null ? journalManager.Export() : null,
+
+            shops = GetAllShopSaveData()
         };
 
         File.WriteAllText(saveLocation, JsonUtility.ToJson(saveData));
@@ -113,7 +116,6 @@ public class SaveController : MonoBehaviour
 
             if (objectiveManager != null)
                 objectiveManager.LoadState(false, false);
-
 
             SaveGame();
 
@@ -186,6 +188,8 @@ public class SaveController : MonoBehaviour
         if (objectiveManager != null)
             objectiveManager.LoadState(saveData.gameEnded, saveData.playerWon);
 
+        LoadAllShopSaveData(saveData.shops);
+
         if (!hasSeenIntroLetter && introLetterController != null)
             introLetterController.Show();
     }
@@ -194,5 +198,34 @@ public class SaveController : MonoBehaviour
     {
         hasSeenIntroLetter = true;
         SaveGame();
+    }
+
+    private List<ShopSaveData> GetAllShopSaveData()
+    {
+        List<ShopSaveData> result = new List<ShopSaveData>();
+
+        ShopNPC[] shops = FindObjectsOfType<ShopNPC>(true);
+        foreach (var shop in shops)
+        {
+            if (shop == null) continue;
+            result.Add(shop.GetSaveData());
+        }
+
+        return result;
+    }
+
+    private void LoadAllShopSaveData(List<ShopSaveData> savedShops)
+    {
+        if (savedShops == null) return;
+
+        ShopNPC[] sceneShops = FindObjectsOfType<ShopNPC>(true);
+        foreach (var sceneShop in sceneShops)
+        {
+            if (sceneShop == null) continue;
+
+            ShopSaveData matchingSave = savedShops.Find(s => s.shopID == sceneShop.shopID);
+            if (matchingSave != null)
+                sceneShop.LoadFromSaveData(matchingSave);
+        }
     }
 }
