@@ -34559,7 +34559,7 @@ MonoBehaviour:
   dateInMonth: 1
   hour: 1
   minutes: 1
-  realSecondsPerGameDay: 1200
+  realSecondsPerGameDay: 300
 --- !u!4 &776723469
 Transform:
   m_ObjectHideFlags: 0
@@ -91336,7 +91336,7 @@ MonoBehaviour:
     your debt, and you will walk away free.\n\nFail... and you may become a permanent
     part of the property.\n\nI have faith in you.\n\nAfter all, you always said you
     wanted a simpler life.\n\nYour dear friend.\n---PAGE---\n\nWASD: Move\nLeft Click:
-    Tool usage\nESC: Inventory\nE: Interact with NPC \n"
+    Tool usage\nESC: Inventory\nE: Interact with NPC \nRight Click: Buy/Sell"
 --- !u!1 &2027076352
 GameObject:
   m_ObjectHideFlags: 0
@@ -91947,7 +91947,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00012207031, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -1414.0002, y: -18.000002}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2062633796
